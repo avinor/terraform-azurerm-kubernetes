@@ -10,18 +10,24 @@ variable "location" {
   description = "The Azure Region in which to create resource."
 }
 
-variable "subnet_id" {
-  description = "Id of subnet where kubernetes cluster should be deployed."
-}
-
 variable "agent_pools" {
-  description = "A list of agent pools to create."
+  description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`."
   type = list(any)
-  default = []
 }
 
 variable "service_cidr" {
   description = "Cidr of service subnet, should be in range 10.241.0.0/16 or network routing will fail."
+}
+
+variable "azure_active_directory" {
+  description = "Azure AD configuration for enabling rbac."
+  type = object({ client_app_id = string, server_app_id = string, server_app_secret = string })
+}
+
+variable "read_only_dashboard" {
+  description = "Kubernetes dashboard does not support rbac. This will create a dashboard that is read-only."
+  type = bool
+  default = false
 }
 
 variable "group_admins" {

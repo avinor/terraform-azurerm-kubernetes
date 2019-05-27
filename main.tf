@@ -6,6 +6,23 @@ terraform {
   }
 }
 
+locals {
+  default_linux_node_profile = {
+    count = 1
+    vm_size = "Standard_D4_v3"
+    max_pods = 30
+    os_disk_size_gb = 60
+    type = "VirtualMachineScaleSets"
+  }
+  default_windows_node_profile = {
+    count = 1
+    vm_size = "Standard_D4_v3"
+    max_pods = 20
+    os_disk_size_gb = 200
+    type = "VirtualMachineScaleSets"
+  }
+}
+
 resource "azurerm_resource_group" "aks" {
   name     = var.resource_group_name
   location = var.location
@@ -35,9 +52,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
   addon_profile {
     # TODO Enable aci connector when its GA
 
-    oms_agent {
-      enabled                    = true
-      log_analytics_workspace_id = "${data.terraform_remote_state.setup.log_resource_id}"
+    dynamic "oms_agent" {
+      for_each = var.log_analytics_workspace_id ? [true] : []
+      content {
+        enabled                    = true
+        log_analytics_workspace_id = var.log_analytics_workspace_id
+      }
     }
   }
 
@@ -51,18 +71,18 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   network_profile {
     network_plugin     = "azure"
-    dns_service_ip     = "${cidrhost(var.service_cidr, 10)}"
+    dns_service_ip     = cidrhost(var.service_cidr, 10)
     docker_bridge_cidr = "172.17.0.1/16"
-    service_cidr       = "${var.service_cidr}"
+    service_cidr       = var.service_cidr
   }
 
   role_based_access_control {
     enabled = true
 
     azure_active_directory {
-      client_app_id     = "${data.azurerm_key_vault_secret.client_app_id.value}"
-      server_app_id     = "${data.azurerm_key_vault_secret.server_app_id.value}"
-      server_app_secret = "${data.azurerm_key_vault_secret.server_app_secret.value}"
+      client_app_id     = var.azure_active_directory.client_app_id
+      server_app_id     = var.azure_active_directory.server_app_id
+      server_app_secret = var.azure_active_directory.server_app_secret
     }
   }
 
@@ -177,6 +197,8 @@ resource "kubernetes_cluster_role_binding" "user" {
 # Does not have access to read secrets
 
 resource "kubernetes_cluster_role" "dashboardviewonly" {
+  count = var.read_only_dashboard ? 1 : 0
+
     metadata {
         name = "dashboard-viewonly"
     }
@@ -350,6 +372,8 @@ resource "kubernetes_cluster_role" "dashboardviewonly" {
 }
 
 resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
+  count = var.read_only_dashboard ? 1 : 0
+
   metadata {
     name = "kubernetes-dashboard"
   }
@@ -357,7 +381,7 @@ resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.dashboardviewonly.metadata.0.name
+    name      = kubernetes_cluster_role.dashboardviewonly[0].metadata.0.name
   }
 
   subject {
