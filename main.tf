@@ -7,46 +7,68 @@ terraform {
 }
 
 locals {
+  default_agent_profile = {
+    count   = 1
+    vm_size = "Standard_D4_v3"
+    os_type = "Linux"
+    type    = "VirtualMachineScaleSets"
+  }
+
+  # Defaults for Linux profile
+  # Generally smaller images so can run more pods and require smaller HD
   default_linux_node_profile = {
-    count = 1
-    vm_size = "Standard_D4_v3"
-    max_pods = 30
+    max_pods        = 30
     os_disk_size_gb = 60
-    type = "VirtualMachineScaleSets"
   }
+
+  # Defaults for Windows profile
+  # Do not want to run same number of pods and some images can be quite large
   default_windows_node_profile = {
-    count = 1
-    vm_size = "Standard_D4_v3"
-    max_pods = 20
+    max_pods        = 20
     os_disk_size_gb = 200
-    type = "VirtualMachineScaleSets"
   }
+
+  agent_pools_with_defaults = [for ap in var.agent_pools :
+    merge(local.default_agent_profile, ap)
+  ]
+  agent_pools = [for ap in local.agent_pools_with_defaults :
+    ap.os_type == "Linux" ? merge(local.default_linux_node_profile, ap) : merge(local.default_windows_node_profile, ap)
+  ]
 }
 
 resource "azurerm_resource_group" "aks" {
   name     = var.resource_group_name
   location = var.location
+
+  tags = var.tags
 }
 
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "${var.name}-aks"
-  location            = azurerm_resource_group.aks.location
-  resource_group_name = azurerm_resource_group.aks.name
-  dns_prefix          = var.name
-  kubernetes_version  = var.kubernetes_version
+  name                            = "${var.name}-aks"
+  location                        = azurerm_resource_group.aks.location
+  resource_group_name             = azurerm_resource_group.aks.name
+  dns_prefix                      = var.name
+  kubernetes_version              = var.kubernetes_version
+  api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
 
-  agent_pool_profile {
-    name            = "default"
-    count           = "${var.agent_count}"
-    vm_size         = "${var.agent_size}"
-    os_type         = "Linux"
-    os_disk_size_gb = 60
-    vnet_subnet_id  = "${data.terraform_remote_state.networking.subnets[var.subnet]}"
+  dynamic "agent_pool_profile" {
+    for_each = local.agent_pools
+    iterator = ap
+    content {
+      name            = ap.value.name
+      count           = ap.value.count
+      vm_size         = ap.value.vm_size
+      max_pods        = ap.value.max_pods
+      os_disk_size_gb = ap.value.os_disk_size_gb
+      os_type         = ap.value.os_type
+      type            = ap.value.type
+      vnet_subnet_id  = ap.value.vnet_subnet_id
+    }
   }
 
   service_principal {
-    client_id     = "${data.azurerm_key_vault_secret.client_id.value}"
-    client_secret = "${data.azurerm_key_vault_secret.client_secret.value}"
+    client_id     = var.service_principal.client_id
+    client_secret = var.service_principal.client_secret
   }
 
   addon_profile {
@@ -61,16 +83,21 @@ resource "azurerm_kubernetes_cluster" "aks" {
     }
   }
 
-  linux_profile {
-    admin_username = "avinoradmin"
+  dynamic "linux_profile" {
+    for_each = var.linux_profile != null ? [true] : []
+    iterator = lp
+    content {
+      admin_username = var.linux_profile.username
 
-    ssh_key {
-      key_data = "${data.terraform_remote_state.setup.ssh_key}"
+      ssh_key {
+        key_data = var.linux_profile.ssh_key
+      }
     }
   }
 
   network_profile {
     network_plugin     = "azure"
+    network_policy     = "azure"
     dns_service_ip     = cidrhost(var.service_cidr, 10)
     docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = var.service_cidr
@@ -199,176 +226,176 @@ resource "kubernetes_cluster_role_binding" "user" {
 resource "kubernetes_cluster_role" "dashboardviewonly" {
   count = var.read_only_dashboard ? 1 : 0
 
-    metadata {
-        name = "dashboard-viewonly"
-    }
+  metadata {
+    name = "dashboard-viewonly"
+  }
 
-    rule {
-        api_groups = [""]
-        resources  = [
-          "configmaps",
-          "endpoints",
-          "persistentvolumeclaims",
-          "pods",
-          "replicationcontrollers",
-          "replicationcontrollers/scale",
-          "serviceaccounts",
-          "services",
-          "nodes",
-          "persistentvolumeclaims",
-          "persistentvolumes",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = [""]
+    resources = [
+      "configmaps",
+      "endpoints",
+      "persistentvolumeclaims",
+      "pods",
+      "replicationcontrollers",
+      "replicationcontrollers/scale",
+      "serviceaccounts",
+      "services",
+      "nodes",
+      "persistentvolumeclaims",
+      "persistentvolumes",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = [""]
-        resources  = [
-          "bindings",
-          "events",
-          "limitranges",
-          "namespaces/status",
-          "pods/log",
-          "pods/status",
-          "replicationcontrollers/status",
-          "resourcequotas",
-          "resourcequotas/status",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = [""]
+    resources = [
+      "bindings",
+      "events",
+      "limitranges",
+      "namespaces/status",
+      "pods/log",
+      "pods/status",
+      "replicationcontrollers/status",
+      "resourcequotas",
+      "resourcequotas/status",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = [""]
-        resources  = [
-          "namespaces",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = [""]
+    resources = [
+      "namespaces",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["apps"]
-        resources  = [
-          "daemonsets",
-          "deployments",
-          "deployments/scale",
-          "replicasets",
-          "replicasets/scale",
-          "statefulsets",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["apps"]
+    resources = [
+      "daemonsets",
+      "deployments",
+      "deployments/scale",
+      "replicasets",
+      "replicasets/scale",
+      "statefulsets",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["autoscaling"]
-        resources  = [
-          "horizontalpodautoscalers",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["autoscaling"]
+    resources = [
+      "horizontalpodautoscalers",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["batch"]
-        resources  = [
-          "cronjobs",
-          "jobs",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["batch"]
+    resources = [
+      "cronjobs",
+      "jobs",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["extensions"]
-        resources  = [
-          "daemonsets",
-          "deployments",
-          "deployments/scale",
-          "ingresses",
-          "networkpolicies",
-          "replicasets",
-          "replicasets/scale",
-          "replicationcontrollers/scale",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["extensions"]
+    resources = [
+      "daemonsets",
+      "deployments",
+      "deployments/scale",
+      "ingresses",
+      "networkpolicies",
+      "replicasets",
+      "replicasets/scale",
+      "replicationcontrollers/scale",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["policy"]
-        resources  = [
-          "poddisruptionbudgets",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["policy"]
+    resources = [
+      "poddisruptionbudgets",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["networking.k8s.io"]
-        resources  = [
-          "networkpolicies",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["networking.k8s.io"]
+    resources = [
+      "networkpolicies",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["storage.k8s.io"]
-        resources  = [
-          "storageclasses",
-          "volumeattachments",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["storage.k8s.io"]
+    resources = [
+      "storageclasses",
+      "volumeattachments",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 
-    rule {
-        api_groups = ["rbac.authorization.k8s.io"]
-        resources  = [
-          "clusterrolebindings",
-          "clusterroles",
-          "roles",
-          "rolebindings",
-        ]
-        verbs      = [
-          "get",
-          "list",
-          "watch",
-        ]
-    }
+  rule {
+    api_groups = ["rbac.authorization.k8s.io"]
+    resources = [
+      "clusterrolebindings",
+      "clusterroles",
+      "roles",
+      "rolebindings",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+    ]
+  }
 }
 
 resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
@@ -394,15 +421,15 @@ resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
 # Give access for Azure to read container logs
 
 resource "kubernetes_cluster_role" "containerlogs" {
-    metadata {
-        name = "containerhealth-log-reader"
-    }
+  metadata {
+    name = "containerhealth-log-reader"
+  }
 
-    rule {
-        api_groups = [""]
-        resources  = ["pods/log"]
-        verbs      = ["get"]
-    }
+  rule {
+    api_groups = [""]
+    resources  = ["pods/log"]
+    verbs      = ["get"]
+  }
 }
 
 resource "kubernetes_cluster_role_binding" "containerlogs" {

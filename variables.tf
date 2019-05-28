@@ -12,34 +12,55 @@ variable "location" {
 
 variable "agent_pools" {
   description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`."
-  type = list(any)
+  type        = list(any)
 }
 
 variable "service_cidr" {
-  description = "Cidr of service subnet, should be in range 10.241.0.0/16 or network routing will fail."
+  description = "Cidr of service subnet. If subnet has UDR make sure this is routed correctly."
+}
+
+variable "kubernetes_version" {
+  description = "Version of Kubernetes to deploy."
+}
+
+variable "service_principal" {
+  description = "Service principal to connect to cluster."
+  type        = object({ client_id = string, client_secret = string })
 }
 
 variable "azure_active_directory" {
   description = "Azure AD configuration for enabling rbac."
-  type = object({ client_app_id = string, server_app_id = string, server_app_secret = string })
+  type        = object({ client_app_id = string, server_app_id = string, server_app_secret = string })
+}
+
+variable "api_server_authorized_ip_ranges" {
+  description = "The IP ranges to whitelist for incoming traffic to the masters."
+  type        = list(string)
+  default     = null
+}
+
+variable "linux_profile" {
+  description = "Username and ssh key for accessing Linux machines with ssh."
+  type        = object({ username = string, ssh_key = string })
+  default     = null
 }
 
 variable "read_only_dashboard" {
   description = "Kubernetes dashboard does not support rbac. This will create a dashboard that is read-only."
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "group_admins" {
   description = "List of Azure AD group object ids that should have admin access."
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }
 
 variable "user_admins" {
   description = "List of Azure AD user object ids that should have admin access."
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }
 
 variable "log_analytics_workspace_id" {
