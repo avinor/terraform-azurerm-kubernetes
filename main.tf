@@ -8,9 +8,14 @@ terraform {
 locals {
   default_agent_profile = {
     count   = 1
-    vm_size = "Standard_D4_v3"
+    vm_size = "Standard_D2_v3"
     os_type = "Linux"
+    availability_zones = null
+    enable_auto_scaling = false
+    min_count = null
+    max_count = null
     type    = "VirtualMachineScaleSets"
+    node_taints = null
   }
 
   # Defaults for Linux profile
@@ -57,11 +62,16 @@ resource "azurerm_kubernetes_cluster" "aks" {
       name            = ap.value.name
       count           = ap.value.count
       vm_size         = ap.value.vm_size
+      availability_zones = ap.value.availability_zones
+      enable_auto_scaling = ap.value.enable_auto_scaling
+      min_count = ap.value.min_count
+      max_count = ap.value.max_count
       max_pods        = ap.value.max_pods
       os_disk_size_gb = ap.value.os_disk_size_gb
       os_type         = ap.value.os_type
       type            = ap.value.type
       vnet_subnet_id  = ap.value.vnet_subnet_id
+      node_taints = ap.value.node_taints
     }
   }
 
@@ -101,6 +111,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     dns_service_ip     = cidrhost(var.service_cidr, 10)
     docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = var.service_cidr
+    load_balancer_sku  = "Standard"
   }
 
   role_based_access_control {
