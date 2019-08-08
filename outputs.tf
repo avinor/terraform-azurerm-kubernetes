@@ -2,6 +2,7 @@ output "host" {
   description = "The Kubernetes cluster server host."
   value = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
 }
+
 output "client_certificate" {
   description = "Base64 encoded public certificate used by clients to authenticate to the Kubernetes cluster."
   value     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)

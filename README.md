@@ -5,3 +5,5 @@ This module will deploy a Kubernetes cluster in Azure (AKS). Module is intention
 ## Preview features
 
 https://docs.microsoft.com/en-us/azure/aks/load-balancer-standard
+
+az aks get-versions --location westeurope --query "orchestrators[].orchestratorVersion"
