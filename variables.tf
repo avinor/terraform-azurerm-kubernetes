@@ -10,17 +10,22 @@ variable "location" {
   description = "The Azure Region in which to create resource."
 }
 
-variable "agent_pools" {
-  description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`."
-  type        = list(any)
-}
-
 variable "service_cidr" {
   description = "Cidr of service subnet. If subnet has UDR make sure this is routed correctly."
 }
 
 variable "kubernetes_version" {
   description = "Version of Kubernetes to deploy."
+}
+
+variable "node_resource_group" {
+  description = "The name of the Resource Group where the Kubernetes Nodes should exist."
+  default = null
+}
+
+variable "agent_pools" {
+  description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`."
+  type        = list(any)
 }
 
 variable "service_principal" {

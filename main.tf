@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12.0"
   required_providers {
-    azurerm = ">= 1.29.0"
+    azurerm = ">= 1.32.0"
   }
 }
 
@@ -54,6 +54,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix                      = var.name
   kubernetes_version              = var.kubernetes_version
   api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
+  node_resource_group             = var.node_resource_group
 
   dynamic "agent_pool_profile" {
     for_each = local.agent_pools
@@ -111,7 +112,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
     dns_service_ip     = cidrhost(var.service_cidr, 10)
     docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = var.service_cidr
-    load_balancer_sku  = "Standard"
+
+    # Do not use Standard as it creates public ip
+    load_balancer_sku  = "Basic"
   }
 
   role_based_access_control {
@@ -127,7 +130,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   tags = var.tags
 }
 
-resource "azurerm_monitor_diagnostic_setting" "public" {
+resource "azurerm_monitor_diagnostic_setting" "aks" {
   count                      = var.log_analytics_workspace_id != null ? 1 : 0
   name                       = "aks-log-analytics"
   target_resource_id         = azurerm_kubernetes_cluster.aks.id
