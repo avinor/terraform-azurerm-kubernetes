@@ -9,3 +9,9 @@ https://docs.microsoft.com/en-us/azure/aks/load-balancer-standard
 
 az aks get-versions --location westeurope --query "orchestrators[].orchestratorVersion"
 
+
+
+helm secure
+https://github.com/helm/helm/blob/master/docs/tiller_ssl.md
+
+https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm

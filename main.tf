@@ -7,15 +7,15 @@ terraform {
 
 locals {
   default_agent_profile = {
-    count   = 1
-    vm_size = "Standard_D2_v3"
-    os_type = "Linux"
-    availability_zones = null
+    count               = 1
+    vm_size             = "Standard_D2_v3"
+    os_type             = "Linux"
+    availability_zones  = null
     enable_auto_scaling = false
-    min_count = null
-    max_count = null
-    type    = "VirtualMachineScaleSets"
-    node_taints = null
+    min_count           = null
+    max_count           = null
+    type                = "VirtualMachineScaleSets"
+    node_taints         = null
   }
 
   # Defaults for Linux profile
@@ -60,19 +60,19 @@ resource "azurerm_kubernetes_cluster" "aks" {
     for_each = local.agent_pools
     iterator = ap
     content {
-      name            = ap.value.name
-      count           = ap.value.count
-      vm_size         = ap.value.vm_size
-      availability_zones = ap.value.availability_zones
+      name                = ap.value.name
+      count               = ap.value.count
+      vm_size             = ap.value.vm_size
+      availability_zones  = ap.value.availability_zones
       enable_auto_scaling = ap.value.enable_auto_scaling
-      min_count = ap.value.min_count
-      max_count = ap.value.max_count
-      max_pods        = ap.value.max_pods
-      os_disk_size_gb = ap.value.os_disk_size_gb
-      os_type         = ap.value.os_type
-      type            = ap.value.type
-      vnet_subnet_id  = ap.value.vnet_subnet_id
-      node_taints = ap.value.node_taints
+      min_count           = ap.value.min_count
+      max_count           = ap.value.max_count
+      max_pods            = ap.value.max_pods
+      os_disk_size_gb     = ap.value.os_disk_size_gb
+      os_type             = ap.value.os_type
+      type                = ap.value.type
+      vnet_subnet_id      = ap.value.vnet_subnet_id
+      node_taints         = ap.value.node_taints
     }
   }
 
@@ -114,7 +114,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     service_cidr       = var.service_cidr
 
     # Do not use Standard as it creates public ip
-    load_balancer_sku  = "Basic"
+    load_balancer_sku = "Basic"
   }
 
   role_based_access_control {
@@ -461,5 +461,34 @@ resource "kubernetes_cluster_role_binding" "containerlogs" {
     api_group = "rbac.authorization.k8s.io"
     kind      = "User"
     name      = "clusterUser"
+  }
+}
+
+#
+# Tiller service account
+#
+
+resource "kubernetes_service_account" "tiller" {
+  metadata {
+    name = "tiller"
+    namespace = "kube-system"
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "tiller" {
+  metadata {
+    name = "tiller"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "tiller"
+    namespace = "kube-system"
   }
 }

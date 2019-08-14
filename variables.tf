@@ -20,7 +20,7 @@ variable "kubernetes_version" {
 
 variable "node_resource_group" {
   description = "The name of the Resource Group where the Kubernetes Nodes should exist."
-  default = null
+  default     = null
 }
 
 variable "agent_pools" {
