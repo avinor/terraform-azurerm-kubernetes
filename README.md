@@ -15,3 +15,5 @@ helm secure
 https://github.com/helm/helm/blob/master/docs/tiller_ssl.md
 
 https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm
+
+helm init --service-account tiller --node-selectors "beta.kubernetes.io/os"="linux"
