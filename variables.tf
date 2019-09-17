@@ -56,14 +56,8 @@ variable "read_only_dashboard" {
   default     = false
 }
 
-variable "group_admins" {
-  description = "List of Azure AD group object ids that should have admin access."
-  type        = list(string)
-  default     = []
-}
-
-variable "user_admins" {
-  description = "List of Azure AD user object ids that should have admin access."
+variable "admins" {
+  description = "List of Azure AD object ids that should have access to get admin credentials."
   type        = list(string)
   default     = []
 }
