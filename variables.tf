@@ -62,6 +62,18 @@ variable "admins" {
   default     = []
 }
 
+variable "container_registries" {
+  description = "List of Azure Container Registry ids where AKS needs pull access."
+  type        = list(string)
+  default     = []
+}
+
+variable "storage_contributor" {
+  description = "List of storage account ids where the AKS service principal should have access."
+  type        = list(string)
+  default     = []
+}
+
 variable "log_analytics_workspace_id" {
   description = "Specifies the ID of a Log Analytics Workspace where Diagnostics Data should be sent."
   default     = null

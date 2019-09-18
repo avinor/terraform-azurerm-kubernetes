@@ -38,6 +38,17 @@ locals {
   agent_pools = [for ap in local.agent_pools_with_defaults :
     ap.os_type == "Linux" ? merge(local.default_linux_node_profile, ap) : merge(local.default_windows_node_profile, ap)
   ]
+
+  # Determine which load balancer to use
+  agent_pool_availability_zones_lb = [for ap in local.agent_pools : ap.availability_zones != null ? "Standard" : ""]
+  load_balancer_sku                = coalesce(flatten([local.agent_pool_availability_zones_lb, ["Basic"]])...)
+
+  # Distinct subnets
+  agent_pool_subnets = distinct(local.agent_pools.*.vnet_subnet_id)
+}
+
+data "azuread_service_principal" "sp" {
+  application_id = var.service_principal.client_id
 }
 
 resource "azurerm_resource_group" "aks" {
@@ -113,8 +124,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
     docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = var.service_cidr
 
-    # Do not use Standard as it creates public ip
-    load_balancer_sku = "Basic"
+    # Use Standard if availability zones are set, Basic otherwise
+    load_balancer_sku = local.load_balancer_sku
   }
 
   role_based_access_control {
@@ -185,53 +196,43 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
   }
 }
 
+# Assign roles
+
+resource "azurerm_role_assignment" "acr" {
+  count                = length(var.container_registries)
+  scope                = var.container_registries[count.index]
+  role_definition_name = "AcrPull"
+  principal_id         = data.azuread_service_principal.sp.object_id
+}
+
+resource "azurerm_role_assignment" "subnet" {
+  count                = length(local.agent_pool_subnets)
+  scope                = local.agent_pool_subnets[count.index]
+  role_definition_name = "Network Contributor"
+  principal_id         = data.azuread_service_principal.sp.object_id
+}
+
+resource "azurerm_role_assignment" "storage" {
+  count                = length(var.storage_contributor)
+  scope                = var.storage_contributor[count.index]
+  role_definition_name = "Storage Account Contributor"
+  principal_id         = data.azuread_service_principal.sp.object_id
+}
+
+resource "azurerm_role_assignment" "admin" {
+  count                = length(var.admins)
+  scope                = azurerm_kubernetes_cluster.aks.id
+  role_definition_name = "Azure Kubernetes Service Cluster Admin Role"
+  principal_id         = var.admins[count.index]
+}
+
+# Configure cluster
+
 provider "kubernetes" {
   host                   = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
   client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)
   client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_key)
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
-}
-
-# AD user/group for AKS admins
-
-resource "kubernetes_cluster_role_binding" "group" {
-  count = length(var.group_admins)
-
-  metadata {
-    name = "azuread-admin-${var.group_admins[count.index]}"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-
-  subject {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "Group"
-    name      = var.group_admins[count.index]
-  }
-}
-
-resource "kubernetes_cluster_role_binding" "user" {
-  count = length(var.user_admins)
-
-  metadata {
-    name = "azuread-admin-${var.user_admins[count.index]}"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-
-  subject {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "User"
-    name      = var.user_admins[count.index]
-  }
 }
 
 # Dashboard doesn't use rbac, so give it only reader access
@@ -470,7 +471,7 @@ resource "kubernetes_cluster_role_binding" "containerlogs" {
 
 resource "kubernetes_service_account" "tiller" {
   metadata {
-    name = "tiller"
+    name      = "tiller"
     namespace = "kube-system"
   }
 }
