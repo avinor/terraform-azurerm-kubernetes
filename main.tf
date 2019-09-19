@@ -219,6 +219,13 @@ resource "azurerm_role_assignment" "storage" {
   principal_id         = data.azuread_service_principal.sp.object_id
 }
 
+resource "azurerm_role_assignment" "msi" {
+  count                = length(var.managed_identities)
+  scope                = var.managed_identities[count.index]
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = data.azuread_service_principal.sp.object_id
+}
+
 resource "azurerm_role_assignment" "admin" {
   count                = length(var.admins)
   scope                = azurerm_kubernetes_cluster.aks.id

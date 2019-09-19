@@ -74,6 +74,12 @@ variable "storage_contributor" {
   default     = []
 }
 
+variable "managed_identities" {
+  description = "List of managed identities where the AKS service principal should have access."
+  type        = list(string)
+  default     = []
+}
+
 variable "log_analytics_workspace_id" {
   description = "Specifies the ID of a Log Analytics Workspace where Diagnostics Data should be sent."
   default     = null
