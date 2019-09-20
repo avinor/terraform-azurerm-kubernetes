@@ -4,6 +4,8 @@ This module will deploy a Kubernetes cluster in Azure (AKS). Module is intention
 
 ## Preview features
 
+Accesses are based on [Microsoft documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-service-principal).
+
 Public ip
 https://docs.microsoft.com/en-us/azure/aks/load-balancer-standard
 
