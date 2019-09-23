@@ -1,3 +1,8 @@
+output "id" {
+  description = "The Kubernetes Managed Cluster ID."
+  value       = azurerm_kubernetes_cluster.aks.id
+}
+
 output "host" {
   description = "The Kubernetes cluster server host."
   value       = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
@@ -19,4 +24,10 @@ output "cluster_ca_certificate" {
   description = "Base64 encoded public CA certificate used as the root of trust for the Kubernetes cluster."
   value       = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
   sensitive   = true
+}
+
+output "kube_config_admin" {
+  description = "Raw kubeconfig output for admin account."
+  value = azurerm_kubernetes_cluster.aks.kube_admin_config_raw
+  sensitive = true
 }
