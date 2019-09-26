@@ -28,6 +28,6 @@ output "cluster_ca_certificate" {
 
 output "kube_config_admin" {
   description = "Raw kubeconfig output for admin account."
-  value = azurerm_kubernetes_cluster.aks.kube_admin_config_raw
-  sensitive = true
+  value       = azurerm_kubernetes_cluster.aks.kube_admin_config_raw
+  sensitive   = true
 }
