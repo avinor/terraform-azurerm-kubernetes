@@ -120,7 +120,7 @@ There are several preview features that can be used when creating the cluster. F
 
 This feature is not recommended at the moment as it requires cluster to be created with a Standard Load Balancer, which has a public ip. Cluster should be secured behind a firewall and do not have a public ip at all. Until it can be created without a public ip this is not supported.
 
-## Api server authorized ip range
+### Api server authorized ip range
 
 Module supports setting this variable, but [preview](https://docs.microsoft.com/en-us/azure/aks/api-server-authorized-ip-ranges) has to be activated.
 
