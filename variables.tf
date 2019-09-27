@@ -30,7 +30,7 @@ variable "agent_pools" {
 
 variable "service_principal" {
   description = "Service principal to connect to cluster."
-  type        = object({ client_id = string, client_secret = string })
+  type        = object({ object_id = string, client_id = string, client_secret = string })
 }
 
 variable "azure_active_directory" {
