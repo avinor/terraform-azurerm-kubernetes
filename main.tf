@@ -41,7 +41,7 @@ locals {
 
   # Determine which load balancer to use
   agent_pool_availability_zones_lb = [for ap in local.agent_pools : ap.availability_zones != null ? "Standard" : ""]
-  load_balancer_sku                = coalesce(flatten([local.agent_pool_availability_zones_lb, ["Basic"]])...)
+  load_balancer_sku                = coalesce(flatten([local.agent_pool_availability_zones_lb, ["Standard"]])...)
 
   # Distinct subnets
   agent_pool_subnets = distinct(local.agent_pools.*.vnet_subnet_id)
