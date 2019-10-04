@@ -493,6 +493,7 @@ resource "helm_release" "containerlogs" {
     name       = "containerlogs"
     repository = data.helm_repository.incubator.metadata.0.name
     chart      = "raw"
+    version    = "0.2.3"
 
     values = [
       <<VALUES
