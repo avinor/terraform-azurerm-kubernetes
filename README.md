@@ -90,15 +90,7 @@ Similar to this the virtual network subnet id could also be retrieved from a dep
 
 ## Helm
 
-Cluster does not come with Helm tiller installed. It does create a service account for tiller though. Once Helm v3 is released this will be removed and manual installation of tiller will not be required.
-
-To initialize tiller without TLS run:
-
-```bash
-helm init --service-account tiller --node-selectors "beta.kubernetes.io/os"="linux"
-```
-
-If secure tiller is required look at [helm instructions](https://github.com/helm/helm/blob/master/docs/tiller_ssl.md) for setup.
+Cluster come with Helm tiller installed. To change the version it installs set the `tiller_version` variable. Once Helm v3 is released this will be removed and manual installation of tiller will not be required.
 
 ## Dashboard
 

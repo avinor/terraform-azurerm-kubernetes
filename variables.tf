@@ -85,6 +85,11 @@ variable "log_analytics_workspace_id" {
   default     = null
 }
 
+variable "tiller_version" {
+  description = "Set to tiller version that should be installed. Will be removed once Helm v3 is released."
+  default     = "v2.14.3"
+}
+
 variable "tags" {
   description = "Tags to apply to all resources created."
   type        = map(string)

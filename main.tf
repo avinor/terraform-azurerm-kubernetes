@@ -436,38 +436,6 @@ resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
   }
 }
 
-# Give access for Azure to read container logs
-
-resource "kubernetes_cluster_role" "containerlogs" {
-  metadata {
-    name = "containerhealth-log-reader"
-  }
-
-  rule {
-    api_groups = [""]
-    resources  = ["pods/log"]
-    verbs      = ["get"]
-  }
-}
-
-resource "kubernetes_cluster_role_binding" "containerlogs" {
-  metadata {
-    name = "containerhealth-read-logs-global"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.containerlogs.metadata.0.name
-  }
-
-  subject {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "User"
-    name      = "clusterUser"
-  }
-}
-
 #
 # Tiller service account
 #
@@ -477,6 +445,8 @@ resource "kubernetes_service_account" "tiller" {
     name      = "tiller"
     namespace = "kube-system"
   }
+
+  automount_service_account_token = true
 }
 
 resource "kubernetes_cluster_role_binding" "tiller" {
@@ -496,3 +466,89 @@ resource "kubernetes_cluster_role_binding" "tiller" {
     namespace = "kube-system"
   }
 }
+
+provider "helm" {
+  kubernetes {
+    host                   = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
+    client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)
+    client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_key)
+    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
+  }
+
+  install_tiller  = "true"
+  service_account = "tiller"
+  tiller_image    = "gcr.io/kubernetes-helm/tiller:${var.tiller_version}"
+}
+
+# Using raw chart to deploy containerlogs, resources to allow Azure to read
+# container logs. Could use terraform kubernetes resources but want to initialize
+# helm and need to deploy a chart. Can change once Helm v3 is out.
+
+data "helm_repository" "incubator" {
+    name = "incubator"
+    url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
+}
+
+resource "helm_release" "containerlogs" {
+    name       = "containerlogs"
+    repository = data.helm_repository.incubator.metadata.0.name
+    chart      = "raw"
+
+    values = [
+      <<VALUES
+resources:
+- apiVersion: rbac.authorization.k8s.io/v1 
+  kind: ClusterRole 
+  metadata: 
+    name: containerHealth-log-reader 
+  rules: 
+    - apiGroups: [""] 
+      resources: ["pods/log", "events"] 
+      verbs: ["get", "list"]  
+
+- apiVersion: rbac.authorization.k8s.io/v1 
+  kind: ClusterRoleBinding 
+  metadata: 
+    name: containerHealth-read-logs-global 
+  roleRef: 
+      kind: ClusterRole 
+      name: containerHealth-log-reader 
+      apiGroup: rbac.authorization.k8s.io 
+  subjects: 
+    - kind: User 
+      name: clusterUser 
+      apiGroup: rbac.authorization.k8s.io
+      VALUES
+    ]
+}
+
+
+# resource "kubernetes_cluster_role" "containerlogs" {
+#   metadata {
+#     name = "containerhealth-log-reader"
+#   }
+
+#   rule {
+#     api_groups = [""]
+#     resources  = ["pods/log"]
+#     verbs      = ["get"]
+#   }
+# }
+
+# resource "kubernetes_cluster_role_binding" "containerlogs" {
+#   metadata {
+#     name = "containerhealth-read-logs-global"
+#   }
+
+#   role_ref {
+#     api_group = "rbac.authorization.k8s.io"
+#     kind      = "ClusterRole"
+#     name      = kubernetes_cluster_role.containerlogs.metadata.0.name
+#   }
+
+#   subject {
+#     api_group = "rbac.authorization.k8s.io"
+#     kind      = "User"
+#     name      = "clusterUser"
+#   }
+# }
