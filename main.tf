@@ -437,6 +437,40 @@ resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
 }
 
 #
+# Container logs for Azure
+#
+
+resource "kubernetes_cluster_role" "containerlogs" {
+  metadata {
+    name = "containerhealth-log-reader"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods/log"]
+    verbs      = ["get"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "containerlogs" {
+  metadata {
+    name = "containerhealth-read-logs-global"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.containerlogs.metadata.0.name
+  }
+
+  subject {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "User"
+    name      = "clusterUser"
+  }
+}
+
+#
 # Tiller service account
 #
 
@@ -484,14 +518,15 @@ provider "helm" {
 # container logs. Could use terraform kubernetes resources but want to initialize
 # helm and need to deploy a chart. Can change once Helm v3 is out.
 
-data "helm_repository" "incubator" {
+# Using the resource and not data to make sure it runs in correct stage of CI pipeline
+resource "helm_repository" "incubator" {
     name = "incubator"
     url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
 }
 
 resource "helm_release" "containerlogs" {
     name       = "containerlogs"
-    repository = data.helm_repository.incubator.metadata.0.name
+    repository = helm_repository.incubator.metadata.0.name
     chart      = "raw"
     version    = "0.2.3"
 
@@ -522,34 +557,3 @@ resources:
       VALUES
     ]
 }
-
-
-# resource "kubernetes_cluster_role" "containerlogs" {
-#   metadata {
-#     name = "containerhealth-log-reader"
-#   }
-
-#   rule {
-#     api_groups = [""]
-#     resources  = ["pods/log"]
-#     verbs      = ["get"]
-#   }
-# }
-
-# resource "kubernetes_cluster_role_binding" "containerlogs" {
-#   metadata {
-#     name = "containerhealth-read-logs-global"
-#   }
-
-#   role_ref {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "ClusterRole"
-#     name      = kubernetes_cluster_role.containerlogs.metadata.0.name
-#   }
-
-#   subject {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "User"
-#     name      = "clusterUser"
-#   }
-# }
