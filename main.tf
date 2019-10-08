@@ -1,7 +1,8 @@
 terraform {
   required_version = ">= 0.12.0"
   required_providers {
-    azurerm = ">= 1.32.0"
+    azurerm = "~> 1.35.0"
+    kubernetes = "~> 1.9.0"
   }
 }
 
@@ -239,237 +240,39 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
 }
 
-# Dashboard doesn't use rbac, so give it only reader access
-# Does not have access to read secrets
+#
+# Container logs for Azure
+#
 
-resource "kubernetes_cluster_role" "dashboardviewonly" {
-  count = var.read_only_dashboard ? 1 : 0
-
+resource "kubernetes_cluster_role" "containerlogs" {
   metadata {
-    name = "dashboard-viewonly"
+    name = "containerhealth-log-reader"
   }
 
   rule {
     api_groups = [""]
-    resources = [
-      "configmaps",
-      "endpoints",
-      "persistentvolumeclaims",
-      "pods",
-      "replicationcontrollers",
-      "replicationcontrollers/scale",
-      "serviceaccounts",
-      "services",
-      "nodes",
-      "persistentvolumeclaims",
-      "persistentvolumes",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = [""]
-    resources = [
-      "bindings",
-      "events",
-      "limitranges",
-      "namespaces/status",
-      "pods/log",
-      "pods/status",
-      "replicationcontrollers/status",
-      "resourcequotas",
-      "resourcequotas/status",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = [""]
-    resources = [
-      "namespaces",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["apps"]
-    resources = [
-      "daemonsets",
-      "deployments",
-      "deployments/scale",
-      "replicasets",
-      "replicasets/scale",
-      "statefulsets",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["autoscaling"]
-    resources = [
-      "horizontalpodautoscalers",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["batch"]
-    resources = [
-      "cronjobs",
-      "jobs",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["extensions"]
-    resources = [
-      "daemonsets",
-      "deployments",
-      "deployments/scale",
-      "ingresses",
-      "networkpolicies",
-      "replicasets",
-      "replicasets/scale",
-      "replicationcontrollers/scale",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["policy"]
-    resources = [
-      "poddisruptionbudgets",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["networking.k8s.io"]
-    resources = [
-      "networkpolicies",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["storage.k8s.io"]
-    resources = [
-      "storageclasses",
-      "volumeattachments",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
-  }
-
-  rule {
-    api_groups = ["rbac.authorization.k8s.io"]
-    resources = [
-      "clusterrolebindings",
-      "clusterroles",
-      "roles",
-      "rolebindings",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-    ]
+    resources  = ["pods/log"]
+    verbs      = ["get"]
   }
 }
 
-resource "kubernetes_cluster_role_binding" "dashboardviewonly" {
-  count = var.read_only_dashboard ? 1 : 0
-
+resource "kubernetes_cluster_role_binding" "containerlogs" {
   metadata {
-    name = "kubernetes-dashboard"
+    name = "containerhealth-read-logs-global"
   }
 
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "ClusterRole"
-    name      = kubernetes_cluster_role.dashboardviewonly[0].metadata.0.name
+    name      = kubernetes_cluster_role.containerlogs.metadata.0.name
   }
 
   subject {
-    kind      = "ServiceAccount"
-    name      = "kubernetes-dashboard"
-    namespace = "kube-system"
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "User"
+    name      = "clusterUser"
   }
 }
-
-#
-# Container logs for Azure
-#
-
-# resource "kubernetes_cluster_role" "containerlogs" {
-#   metadata {
-#     name = "containerhealth-log-reader"
-#   }
-
-#   rule {
-#     api_groups = [""]
-#     resources  = ["pods/log"]
-#     verbs      = ["get"]
-#   }
-# }
-
-# resource "kubernetes_cluster_role_binding" "containerlogs" {
-#   metadata {
-#     name = "containerhealth-read-logs-global"
-#   }
-
-#   role_ref {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "ClusterRole"
-#     name      = kubernetes_cluster_role.containerlogs.metadata.0.name
-#   }
-
-#   subject {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "User"
-#     name      = "clusterUser"
-#   }
-# }
 
 #
 # Service accounts
@@ -519,86 +322,91 @@ data "kubernetes_secret" "sa" {
 # Tiller service account
 #
 
-resource "kubernetes_service_account" "tiller" {
-  metadata {
-    name      = "tiller"
-    namespace = "kube-system"
-  }
+# resource "kubernetes_service_account" "tiller" {
+#   metadata {
+#     name      = "tiller"
+#     namespace = "kube-system"
+#   }
 
-  automount_service_account_token = true
+#   automount_service_account_token = true
+# }
+
+# resource "kubernetes_cluster_role_binding" "tiller" {
+#   metadata {
+#     name = "tiller"
+#   }
+
+#   role_ref {
+#     api_group = "rbac.authorization.k8s.io"
+#     kind      = "ClusterRole"
+#     name      = "cluster-admin"
+#   }
+
+#   subject {
+#     kind      = "ServiceAccount"
+#     name      = "tiller"
+#     namespace = "kube-system"
+#   }
+# }
+
+module "tiller" {
+  source  = "iplabs/tiller/kubernetes"
+  version = "3.2.0"
 }
 
-resource "kubernetes_cluster_role_binding" "tiller" {
-  metadata {
-    name = "tiller"
-  }
+# provider "helm" {
+#   kubernetes {
+#     host                   = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
+#     client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)
+#     client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_key)
+#     cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
+#   }
 
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "cluster-admin"
-  }
-
-  subject {
-    kind      = "ServiceAccount"
-    name      = "tiller"
-    namespace = "kube-system"
-  }
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
-  }
-
-  install_tiller  = "true"
-  service_account = "tiller"
-  tiller_image    = "gcr.io/kubernetes-helm/tiller:${var.tiller_version}"
-}
+#   install_tiller  = "true"
+#   service_account = "tiller"
+#   tiller_image    = "gcr.io/kubernetes-helm/tiller:${var.tiller_version}"
+# }
 
 # Using raw chart to deploy containerlogs, resources to allow Azure to read
 # container logs. Could use terraform kubernetes resources but want to initialize
 # helm and need to deploy a chart. Can change once Helm v3 is out.
 
 # Using the resource and not data to make sure it runs in correct stage of CI pipeline
-resource "helm_repository" "incubator" {
-  name = "incubator"
-  url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
-}
+# resource "helm_repository" "incubator" {
+#   name = "incubator"
+#   url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
+# }
 
-resource "helm_release" "containerlogs" {
-  name       = "containerlogs"
-  repository = helm_repository.incubator.metadata.0.name
-  chart      = "raw"
-  version    = "0.2.3"
+# resource "helm_release" "containerlogs" {
+#   name       = "containerlogs"
+#   repository = helm_repository.incubator.metadata.0.name
+#   chart      = "raw"
+#   version    = "0.2.3"
 
-  values = [
-    <<VALUES
-resources:
-- apiVersion: rbac.authorization.k8s.io/v1 
-  kind: ClusterRole 
-  metadata: 
-    name: containerHealth-log-reader 
-  rules: 
-    - apiGroups: [""] 
-      resources: ["pods/log", "events"] 
-      verbs: ["get", "list"]  
+#   values = [
+#     <<VALUES
+# resources:
+# - apiVersion: rbac.authorization.k8s.io/v1 
+#   kind: ClusterRole 
+#   metadata: 
+#     name: containerHealth-log-reader 
+#   rules: 
+#     - apiGroups: [""] 
+#       resources: ["pods/log", "events"] 
+#       verbs: ["get", "list"]  
 
-- apiVersion: rbac.authorization.k8s.io/v1 
-  kind: ClusterRoleBinding 
-  metadata: 
-    name: containerHealth-read-logs-global 
-  roleRef: 
-      kind: ClusterRole 
-      name: containerHealth-log-reader 
-      apiGroup: rbac.authorization.k8s.io 
-  subjects: 
-    - kind: User 
-      name: clusterUser 
-      apiGroup: rbac.authorization.k8s.io
-      VALUES
-  ]
-}
+# - apiVersion: rbac.authorization.k8s.io/v1 
+#   kind: ClusterRoleBinding 
+#   metadata: 
+#     name: containerHealth-read-logs-global 
+#   roleRef: 
+#       kind: ClusterRole 
+#       name: containerHealth-log-reader 
+#       apiGroup: rbac.authorization.k8s.io 
+#   subjects: 
+#     - kind: User 
+#       name: clusterUser 
+#       apiGroup: rbac.authorization.k8s.io
+#       VALUES
+#   ]
+# }

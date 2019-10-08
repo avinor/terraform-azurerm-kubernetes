@@ -50,12 +50,6 @@ variable "linux_profile" {
   default     = null
 }
 
-variable "read_only_dashboard" {
-  description = "Kubernetes dashboard does not support rbac. This will create a dashboard that is read-only."
-  type        = bool
-  default     = false
-}
-
 variable "admins" {
   description = "List of Azure AD object ids that should have access to get admin credentials."
   type        = list(string)
