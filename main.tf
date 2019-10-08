@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12.0"
   required_providers {
-    azurerm = "~> 1.35.0"
+    azurerm    = "~> 1.35.0"
     kubernetes = "~> 1.9.0"
   }
 }
@@ -352,6 +352,9 @@ data "kubernetes_secret" "sa" {
 module "tiller" {
   source  = "iplabs/tiller/kubernetes"
   version = "3.2.0"
+
+  tiller_version   = var.tiller_version
+  tiller_namespace = "tiller"
 }
 
 # provider "helm" {

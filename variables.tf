@@ -76,8 +76,8 @@ variable "managed_identities" {
 
 variable "service_accounts" {
   description = "List of service accounts to create and their roles."
-  type = list(object({ name = string, namespace = string, role = string }))
-  default = []
+  type        = list(object({ name = string, namespace = string, role = string }))
+  default     = []
 }
 
 variable "enable_pod_security_policy" {
@@ -93,7 +93,7 @@ variable "log_analytics_workspace_id" {
 
 variable "tiller_version" {
   description = "Set to tiller version that should be installed. Will be removed once Helm v3 is released."
-  default     = "v2.14.3"
+  default     = "2.14.3"
 }
 
 variable "tags" {

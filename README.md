@@ -94,7 +94,7 @@ Cluster come with Helm tiller installed. To change the version it installs set t
 
 ## Dashboard
 
-Currently the Kubernetes Dashboard does not support RBAC in a good way. There is an option in this module to turn on a read-only dashboard with variable `read_only_dashboard`. When set to true it will grant users access to read resources in Kubernetes from the dashboard, except secrets, but not modify in any way. Dashboard still has to be started by running `az aks browse` where users have to sign in.
+AKS comes with dashboard preinstalled, but currently it does not work well with rbac enabled. It is possible to open the dashboard by running `az aks browse`, but it does not have access to read any resources. This could be resolved by granting the dashboard service account access to read, or enable token authentication on the dashboard. Both requires additional configuration after cluster has been deployed.
 
 ## Available version
 
@@ -120,8 +120,16 @@ Module supports setting this variable, but [preview](https://docs.microsoft.com/
 
 For use with multiple node pools [enable this feature](https://docs.microsoft.com/en-us/azure/aks/use-multiple-node-pools) before creating cluster.
 
+### Pod Security Policy
+
+When turning on pod security policy the [feature first has to be enabled](https://docs.microsoft.com/en-us/azure/aks/use-pod-security-policies). It is **recommended** to enable this feature and by default it will be turned on. No policies will be deployed so by default it will fail to run pods as they do not have any privileges.
+
 ## Roles
 
 This module will assign the required roles for cluster. These are based on the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-service-principal). The variables `container_registries` and `storage_contributor` can be used to grant it access to container registries and storage accounts.
 
 If cluster needs to manage some Managed Identities that can be done by using the input variable `managed_identities`. The AKS service principal will be granted `Managed Identity Operator` role to those identities.
+
+## Service accounts
+
+Using the `service_accounts` variable it is possible to create some default service accounts. For instance to create a service account with `cluster_admin` role that can be used in CI / CI pipelines. It is not recommended to use the admin credentials as they cannot be revoked later. 
