@@ -80,6 +80,12 @@ variable "managed_identities" {
   default     = []
 }
 
+variable "enable_pod_security_policy" {
+  description = "Whether Pod Security Policies are enabled. Note that this also requires role based access control to be enabled."
+  type        = bool
+  default     = true
+}
+
 variable "log_analytics_workspace_id" {
   description = "Specifies the ID of a Log Analytics Workspace where Diagnostics Data should be sent."
   default     = null

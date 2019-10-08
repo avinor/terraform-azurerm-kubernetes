@@ -62,6 +62,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   kubernetes_version              = var.kubernetes_version
   api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
   node_resource_group             = var.node_resource_group
+  enable_pod_security_policy      = var.enable_pod_security_policy
 
   dynamic "agent_pool_profile" {
     for_each = local.agent_pools
@@ -520,18 +521,18 @@ provider "helm" {
 
 # Using the resource and not data to make sure it runs in correct stage of CI pipeline
 resource "helm_repository" "incubator" {
-    name = "incubator"
-    url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
+  name = "incubator"
+  url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
 }
 
 resource "helm_release" "containerlogs" {
-    name       = "containerlogs"
-    repository = helm_repository.incubator.metadata.0.name
-    chart      = "raw"
-    version    = "0.2.3"
+  name       = "containerlogs"
+  repository = helm_repository.incubator.metadata.0.name
+  chart      = "raw"
+  version    = "0.2.3"
 
-    values = [
-      <<VALUES
+  values = [
+    <<VALUES
 resources:
 - apiVersion: rbac.authorization.k8s.io/v1 
   kind: ClusterRole 
@@ -555,5 +556,5 @@ resources:
       name: clusterUser 
       apiGroup: rbac.authorization.k8s.io
       VALUES
-    ]
+  ]
 }
