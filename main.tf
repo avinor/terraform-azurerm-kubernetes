@@ -319,97 +319,19 @@ data "kubernetes_secret" "sa" {
 }
 
 #
-# Tiller service account
+# Tiller setup
 #
 
-# resource "kubernetes_service_account" "tiller" {
-#   metadata {
-#     name      = "tiller"
-#     namespace = "kube-system"
-#   }
-
-#   automount_service_account_token = true
-# }
-
-# resource "kubernetes_cluster_role_binding" "tiller" {
-#   metadata {
-#     name = "tiller"
-#   }
-
-#   role_ref {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "ClusterRole"
-#     name      = "cluster-admin"
-#   }
-
-#   subject {
-#     kind      = "ServiceAccount"
-#     name      = "tiller"
-#     namespace = "kube-system"
-#   }
-# }
+resource "kubernetes_namespace" "tiller" {
+  metadata {
+    name = "tiller"
+  }
+}
 
 module "tiller" {
   source  = "iplabs/tiller/kubernetes"
   version = "3.2.0"
 
   tiller_version   = var.tiller_version
-  tiller_namespace = "tiller"
+  tiller_namespace = kubernetes_namespace.tiller.metadata.0.name
 }
-
-# provider "helm" {
-#   kubernetes {
-#     host                   = azurerm_kubernetes_cluster.aks.kube_admin_config.0.host
-#     client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)
-#     client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_key)
-#     cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
-#   }
-
-#   install_tiller  = "true"
-#   service_account = "tiller"
-#   tiller_image    = "gcr.io/kubernetes-helm/tiller:${var.tiller_version}"
-# }
-
-# Using raw chart to deploy containerlogs, resources to allow Azure to read
-# container logs. Could use terraform kubernetes resources but want to initialize
-# helm and need to deploy a chart. Can change once Helm v3 is out.
-
-# Using the resource and not data to make sure it runs in correct stage of CI pipeline
-# resource "helm_repository" "incubator" {
-#   name = "incubator"
-#   url  = "https://kubernetes-charts-incubator.storage.googleapis.com"
-# }
-
-# resource "helm_release" "containerlogs" {
-#   name       = "containerlogs"
-#   repository = helm_repository.incubator.metadata.0.name
-#   chart      = "raw"
-#   version    = "0.2.3"
-
-#   values = [
-#     <<VALUES
-# resources:
-# - apiVersion: rbac.authorization.k8s.io/v1 
-#   kind: ClusterRole 
-#   metadata: 
-#     name: containerHealth-log-reader 
-#   rules: 
-#     - apiGroups: [""] 
-#       resources: ["pods/log", "events"] 
-#       verbs: ["get", "list"]  
-
-# - apiVersion: rbac.authorization.k8s.io/v1 
-#   kind: ClusterRoleBinding 
-#   metadata: 
-#     name: containerHealth-read-logs-global 
-#   roleRef: 
-#       kind: ClusterRole 
-#       name: containerHealth-log-reader 
-#       apiGroup: rbac.authorization.k8s.io 
-#   subjects: 
-#     - kind: User 
-#       name: clusterUser 
-#       apiGroup: rbac.authorization.k8s.io
-#       VALUES
-#   ]
-# }
