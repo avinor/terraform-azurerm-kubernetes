@@ -80,6 +80,12 @@ variable "managed_identities" {
   default     = []
 }
 
+variable "service_accounts" {
+  description = "List of service accounts to create and their roles."
+  type = list(object({ name = string, namespace = string, role = string }))
+  default = []
+}
+
 variable "enable_pod_security_policy" {
   description = "Whether Pod Security Policies are enabled. Note that this also requires role based access control to be enabled."
   type        = bool
