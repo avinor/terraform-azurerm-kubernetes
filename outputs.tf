@@ -11,4 +11,5 @@ output "host" {
 output "service_account_keys" {
   description = "Map of all service accounts created and their keys."
   value       = zipmap(var.service_accounts.*.name, data.kubernetes_secret.sa.*.data)
+  sensitive   = true
 }

@@ -132,4 +132,4 @@ If cluster needs to manage some Managed Identities that can be done by using the
 
 ## Service accounts
 
-Using the `service_accounts` variable it is possible to create some default service accounts. For instance to create a service account with `cluster_admin` role that can be used in CI / CI pipelines. It is not recommended to use the admin credentials as they cannot be revoked later. 
+Using the `service_accounts` variable it is possible to create some default service accounts. For instance to create a service account with `cluster_admin` role that can be used in CI / CI pipelines. It is not recommended to use the admin credentials as they cannot be revoked later.
