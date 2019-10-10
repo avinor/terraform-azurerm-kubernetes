@@ -329,8 +329,8 @@ resource "kubernetes_namespace" "tiller" {
 }
 
 module "tiller" {
-  source  = "iplabs/tiller/kubernetes"
-  version = "3.2.0"
+  source  = "github.com/avinor/terraform-kubernetes-tiller"
+  #version = "3.2.0"
 
   tiller_version   = var.tiller_version
   tiller_namespace = kubernetes_namespace.tiller.metadata.0.name
