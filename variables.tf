@@ -24,7 +24,7 @@ variable "node_resource_group" {
 }
 
 variable "agent_pools" {
-  description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`."
+  description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`. See README for default values."
   type        = list(any)
 }
 
