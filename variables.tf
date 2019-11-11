@@ -52,7 +52,7 @@ variable "linux_profile" {
 
 variable "admins" {
   description = "List of Azure AD object ids that should be able to impersonate admin user."
-  type        = list(string)
+  type        = list(object({ kind = string, name = string }))
   default     = []
 }
 

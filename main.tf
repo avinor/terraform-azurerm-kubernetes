@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12.0"
   required_providers {
-    azurerm    = "~> 1.35.0"
+    azurerm    = "~> 1.36.0"
     kubernetes = "~> 1.9.0"
   }
 }
@@ -228,13 +228,6 @@ resource "azurerm_role_assignment" "msi" {
   principal_id         = var.service_principal.object_id
 }
 
-resource "azurerm_role_assignment" "admin" {
-  count                = length(var.admins)
-  scope                = azurerm_kubernetes_cluster.aks.id
-  role_definition_name = "Azure Kubernetes Service Cluster Admin Role"
-  principal_id         = var.admins[count.index]
-}
-
 # Configure cluster
 
 provider "kubernetes" {
@@ -242,6 +235,42 @@ provider "kubernetes" {
   client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_certificate)
   client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.client_key)
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_admin_config.0.cluster_ca_certificate)
+}
+
+#
+# Impersonation of admins
+#
+
+resource "kubernetes_cluster_role" "impersonator" {
+  metadata {
+    name = "impersonator"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["users", "groups", "serviceaccounts"]
+    verbs      = ["impersonate"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "impersonator" {
+  count = length(var.admins)
+
+  metadata {
+    name = "${var.admins[count.index].name}-administrator"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.impersonator.metadata.0.name
+  }
+
+  subject {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = var.admins[count.index].kind
+    name      = var.admins[count.index].name
+  }
 }
 
 #
@@ -333,7 +362,7 @@ resource "kubernetes_namespace" "tiller" {
 }
 
 module "tiller" {
-  source  = "github.com/avinor/terraform-kubernetes-tiller"
+  source = "github.com/avinor/terraform-kubernetes-tiller"
   #version = "3.2.0"
 
   tiller_version   = var.tiller_version
