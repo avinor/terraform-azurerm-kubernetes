@@ -93,7 +93,7 @@ variable "log_analytics_workspace_id" {
 
 variable "tiller_version" {
   description = "Set to tiller version that should be installed. Will be removed once Helm v3 is released."
-  default     = "2.14.3"
+  default     = "2.16.0"
 }
 
 variable "tags" {
