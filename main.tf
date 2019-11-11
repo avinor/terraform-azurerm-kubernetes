@@ -46,6 +46,33 @@ locals {
 
   # Distinct subnets
   agent_pool_subnets = distinct(local.agent_pools.*.vnet_subnet_id)
+
+  # Diagnostic settings
+  diag_kube_logs = [
+    "kube-apiserver",
+    "kube-audit",
+    "kube-controller-manager",
+    "kube-scheduler",
+    "cluster-autoscaler",
+  ]
+  diag_kube_metrics = [
+    "AllMetrics",
+  ]
+
+  diag_resource_list = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
+  parsed_diag = var.diagnostics != null ? {
+    log_analytics_id   = contains(local.diag_resource_list, "microsoft.operationalinsights") ? var.diagnostics.destination : null
+    storage_account_id = contains(local.diag_resource_list, "Microsoft.Storage") ? var.diagnostics.destination : null
+    event_hub_auth_id  = contains(local.diag_resource_list, "Microsoft.EventHub") ? var.diagnostics.destination : null
+    metric             = contains(var.diagnostics.metrics, "all") ? local.diag_kube_metrics : var.diagnostics.metrics
+    log                = contains(var.diagnostics.logs, "all") ? local.diag_kube_logs : var.diagnostics.metrics
+    } : {
+    log_analytics_id   = null
+    storage_account_id = null
+    event_hub_auth_id  = null
+    metric             = []
+    log                = []
+  }
 }
 
 resource "azurerm_resource_group" "aks" {
@@ -140,56 +167,33 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "aks" {
-  count                      = var.log_analytics_workspace_id != null ? 1 : 0
-  name                       = "aks-log-analytics"
-  target_resource_id         = azurerm_kubernetes_cluster.aks.id
-  log_analytics_workspace_id = var.log_analytics_workspace_id
+  count                          = var.diagnostics != null ? 1 : 0
+  name                           = "${var.name}-aks-diag"
+  target_resource_id             = azurerm_kubernetes_cluster.aks.id
+  log_analytics_workspace_id     = local.parsed_diag.log_analytics_id
+  eventhub_authorization_rule_id = local.parsed_diag.event_hub_auth_id
+  eventhub_name                  = local.parsed_diag.event_hub_auth_id != null ? var.diagnostics.eventhub_name : null
+  storage_account_id             = local.parsed_diag.storage_account_id
 
-  log {
-    category = "kube-apiserver"
+  dynamic "log" {
+    for_each = local.parsed_diag.log
+    content {
+      category = log.value
 
-    retention_policy {
-      enabled = false
+      retention_policy {
+        enabled = false
+      }
     }
   }
 
-  log {
-    category = "kube-controller-manager"
+  dynamic "metric" {
+    for_each = local.parsed_diag.metric
+    content {
+      category = metric.value
 
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  log {
-    category = "cluster-autoscaler"
-
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  log {
-    category = "kube-scheduler"
-
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  log {
-    category = "kube-audit"
-
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  metric {
-    category = "AllMetrics"
-
-    retention_policy {
-      enabled = false
+      retention_policy {
+        enabled = false
+      }
     }
   }
 }
