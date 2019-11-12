@@ -94,7 +94,7 @@ variable "diagnostics" {
 
 variable "tiller_version" {
   description = "Set to tiller version that should be installed. Will be removed once Helm v3 is released."
-  default     = "2.16.0"
+  default     = "2.16.1"
 }
 
 variable "tags" {
