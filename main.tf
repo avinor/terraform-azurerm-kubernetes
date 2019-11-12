@@ -117,16 +117,18 @@ resource "azurerm_kubernetes_cluster" "aks" {
     client_secret = var.service_principal.client_secret
   }
 
-  # TODO Fails if no addon_profile's are defined, creates empty block then
   addon_profile {
-    # TODO Enable aci connector when its GA
+    oms_agent {
+      enabled = var.addons.oms_agent
+      log_analytics_workspace_id = var.addons.oms_agent ? var.addons.oms_agent_workspace_id : null
+    }
 
-    dynamic "oms_agent" {
-      for_each = var.log_analytics_workspace_id != null ? [true] : []
-      content {
-        enabled                    = true
-        log_analytics_workspace_id = var.log_analytics_workspace_id
-      }
+    kube_dashboard {
+      enabled = var.addons.dashboard
+    }
+
+    azure_policy {
+      enabled = var.addons.policy
     }
   }
 

@@ -92,6 +92,12 @@ variable "diagnostics" {
   default     = null
 }
 
+variable "addons" {
+  description = "Addons to enable / disable."
+  type = object({ dashboard = bool, oms_agent = bool, oms_agent_workspace_id = string, policy = bool })
+  default = { dashboard = false, oms_agent = false, oms_agent_workspace_id = null, policy = true }
+}
+
 variable "tiller_version" {
   description = "Set to tiller version that should be installed. Will be removed once Helm v3 is released."
   default     = "2.16.1"
