@@ -393,7 +393,7 @@ resource "kubernetes_role_binding" "tiller" {
   count = length(var.admins)
 
   metadata {
-    name = "tiller-access-role-binding"
+    name = "${var.admins[count.index].name}-tiller"
     namespace = "tiller"
   }
 
