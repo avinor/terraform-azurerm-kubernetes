@@ -110,26 +110,6 @@ To get a list of available Kubernetes version in a region run the following comm
 az aks get-versions --location westeurope --query "orchestrators[].orchestratorVersion"
 ```
 
-## Preview faetures
-
-There are several preview features that can be used when creating the cluster. For some of the settings its required that those are set for cluster to work.
-
-### Availability Zones
-
-This feature is not recommended at the moment as it requires cluster to be created with a Standard Load Balancer, which has a public ip. Cluster should be secured behind a firewall and do not have a public ip at all. Until it can be created without a public ip this is not supported.
-
-### Api server authorized ip range
-
-Module supports setting this variable, but [preview](https://docs.microsoft.com/en-us/azure/aks/api-server-authorized-ip-ranges) has to be activated.
-
-### Multiple Node Pools
-
-For use with multiple node pools [enable this feature](https://docs.microsoft.com/en-us/azure/aks/use-multiple-node-pools) before creating cluster.
-
-### Pod Security Policy
-
-When turning on pod security policy the [feature first has to be enabled](https://docs.microsoft.com/en-us/azure/aks/use-pod-security-policies). It is **recommended** to enable this feature and by default it will be turned on. No policies will be deployed so by default it will fail to run pods as they do not have any privileges.
-
 ## Roles
 
 This module will assign the required roles for cluster. These are based on the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-service-principal). The variables `container_registries` and `storage_contributor` can be used to grant it access to container registries and storage accounts.

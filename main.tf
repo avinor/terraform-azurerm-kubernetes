@@ -370,3 +370,42 @@ module "tiller" {
   tiller_version   = var.tiller_version
   tiller_namespace = kubernetes_namespace.tiller.metadata.0.name
 }
+
+resource "kubernetes_cluster_role" "tiller" {
+  metadata {
+    name = "tiller-access"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods/portforward"]
+    verbs      = ["create"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods"]
+    verbs      = ["get","list"]
+  }
+}
+
+resource "kubernetes_role_binding" "tiller" {
+  count = length(var.admins)
+
+  metadata {
+    name = "tiller-access-role-binding"
+    namespace = "tiller"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.tiller.metadata.0.name
+  }
+
+  subject {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = var.admins[count.index].kind
+    name      = var.admins[count.index].name
+  }
+}
