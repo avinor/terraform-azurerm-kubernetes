@@ -52,8 +52,8 @@ variable "linux_profile" {
 
 variable "windows_profile" {
   description = "Admin username and password for Windows hosts."
-  type = object({ username = string, password = string })
-  default = null
+  type        = object({ username = string, password = string })
+  default     = null
 }
 
 variable "admins" {
