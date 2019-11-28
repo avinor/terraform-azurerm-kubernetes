@@ -143,6 +143,15 @@ resource "azurerm_kubernetes_cluster" "aks" {
     }
   }
 
+  dynamic "windows_profile" {
+    for_each = var.windows_profile != null ? [true] : []
+    iterator = wp
+    content {
+      admin_username = var.windows_profile.username
+      admin_password = var.windows_profile.password
+    }
+  }
+
   network_profile {
     network_plugin     = "azure"
     network_policy     = "azure"

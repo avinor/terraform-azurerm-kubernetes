@@ -50,6 +50,12 @@ variable "linux_profile" {
   default     = null
 }
 
+variable "windows_profile" {
+  description = "Admin username and password for Windows hosts."
+  type = object({ username = string, password = string })
+  default = null
+}
+
 variable "admins" {
   description = "List of Azure AD object ids that should be able to impersonate admin user."
   type        = list(object({ kind = string, name = string }))
