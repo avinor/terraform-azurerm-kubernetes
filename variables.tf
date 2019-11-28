@@ -94,8 +94,8 @@ variable "diagnostics" {
 
 variable "addons" {
   description = "Addons to enable / disable."
-  type = object({ dashboard = bool, oms_agent = bool, oms_agent_workspace_id = string, policy = bool })
-  default = { dashboard = false, oms_agent = false, oms_agent_workspace_id = null, policy = true }
+  type        = object({ dashboard = bool, oms_agent = bool, oms_agent_workspace_id = string, policy = bool })
+  default     = { dashboard = false, oms_agent = false, oms_agent_workspace_id = null, policy = true }
 }
 
 variable "tiller_version" {

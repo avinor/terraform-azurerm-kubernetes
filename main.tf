@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12.6"
   required_providers {
-    azurerm    = "~> 1.36.0"
+    azurerm    = "~> 1.37.0"
     kubernetes = "~> 1.9.0"
   }
 }
@@ -36,16 +36,16 @@ locals {
   agent_pools_with_defaults = [for ap in var.agent_pools :
     merge(local.default_agent_profile, ap)
   ]
-  agent_pools = [for ap in local.agent_pools_with_defaults :
-    ap.os_type == "Linux" ? merge(local.default_linux_node_profile, ap) : merge(local.default_windows_node_profile, ap)
-  ]
+  agent_pools = { for ap in local.agent_pools_with_defaults :
+    ap.name => ap.os_type == "Linux" ? merge(local.default_linux_node_profile, ap) : merge(local.default_windows_node_profile, ap)
+  }
 
   # Determine which load balancer to use
   agent_pool_availability_zones_lb = [for ap in local.agent_pools : ap.availability_zones != null ? "Standard" : ""]
   load_balancer_sku                = coalesce(flatten([local.agent_pool_availability_zones_lb, ["Standard"]])...)
 
   # Distinct subnets
-  agent_pool_subnets = distinct(local.agent_pools.*.vnet_subnet_id)
+  agent_pool_subnets = distinct([for ap in local.agent_pools : ap.vnet_subnet_id])
 
   # Diagnostic settings
   diag_kube_logs = [
@@ -92,12 +92,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
   node_resource_group             = var.node_resource_group
   enable_pod_security_policy      = var.enable_pod_security_policy
 
-  dynamic "agent_pool_profile" {
-    for_each = local.agent_pools
+  dynamic "default_node_pool" {
+    for_each = { for k, v in local.agent_pools : k => v if k == "default" }
     iterator = ap
     content {
       name                = ap.value.name
-      count               = ap.value.count
+      node_count          = ap.value.count
       vm_size             = ap.value.vm_size
       availability_zones  = ap.value.availability_zones
       enable_auto_scaling = ap.value.enable_auto_scaling
@@ -105,7 +105,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
       max_count           = ap.value.max_count
       max_pods            = ap.value.max_pods
       os_disk_size_gb     = ap.value.os_disk_size_gb
-      os_type             = ap.value.os_type
       type                = ap.value.type
       vnet_subnet_id      = ap.value.vnet_subnet_id
       node_taints         = ap.value.node_taints
@@ -119,7 +118,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   addon_profile {
     oms_agent {
-      enabled = var.addons.oms_agent
+      enabled                    = var.addons.oms_agent
       log_analytics_workspace_id = var.addons.oms_agent ? var.addons.oms_agent_workspace_id : null
     }
 
@@ -166,6 +165,24 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   tags = var.tags
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "aks" {
+  for_each = { for k, v in local.agent_pools : k => v if k != "default" }
+
+  name                  = each.key
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
+  vm_size               = each.value.vm_size
+  availability_zones    = each.value.availability_zones
+  enable_auto_scaling   = each.value.enable_auto_scaling
+  node_count            = each.value.count
+  min_count             = each.value.min_count
+  max_count             = each.value.max_count
+  max_pods              = each.value.max_pods
+  os_disk_size_gb       = each.value.os_disk_size_gb
+  os_type               = each.value.os_type
+  vnet_subnet_id        = each.value.vnet_subnet_id
+  node_taints           = each.value.node_taints
 }
 
 resource "azurerm_monitor_diagnostic_setting" "aks" {
@@ -385,7 +402,7 @@ resource "kubernetes_cluster_role" "tiller" {
   rule {
     api_groups = [""]
     resources  = ["pods"]
-    verbs      = ["get","list"]
+    verbs      = ["get", "list"]
   }
 }
 
@@ -393,7 +410,7 @@ resource "kubernetes_role_binding" "tiller" {
   count = length(var.admins)
 
   metadata {
-    name = "${var.admins[count.index].name}-tiller"
+    name      = "${var.admins[count.index].name}-tiller"
     namespace = "tiller"
   }
 

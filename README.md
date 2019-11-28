@@ -2,6 +2,8 @@
 
 Terraform module to deploy a Kubernetes cluster on Azure by using the managed Kubernetes solution AKS. For security reasons it will only deploy a rbac enabled clusters and requires an Azure AD application for authenticating users. This account can be created with the module [avinor/kubernetes-azuread-integration/azurerm](https://github.com/avinor/terraform-azurerm-kubernetes-azuread-integration). Service principal required can be created with [avinor/service-principal/azurerm](https://github.com/avinor/terraform-azurerm-service-principal) module. It is not required to grant the service principal any roles, this module will make sure to grant required roles. That does however mean that the deployment has to run with Owner priviledges.
 
+From version 1.5.0 of module it is required that one of the agent pools have name "default". This due to change when using multiple node pools in azurerm provider 1.37.0.
+
 ## Usage
 
 This example deploys a simple cluster with one node pool. The service principal and Azure AD integration secrets need to be changed.
