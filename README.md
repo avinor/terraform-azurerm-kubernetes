@@ -2,7 +2,7 @@
 
 Terraform module to deploy a Kubernetes cluster on Azure by using the managed Kubernetes solution AKS. For security reasons it will only deploy a rbac enabled clusters and requires an Azure AD application for authenticating users. This account can be created with the module [avinor/kubernetes-azuread-integration/azurerm](https://github.com/avinor/terraform-azurerm-kubernetes-azuread-integration). Service principal required can be created with [avinor/service-principal/azurerm](https://github.com/avinor/terraform-azurerm-service-principal) module. It is not required to grant the service principal any roles, this module will make sure to grant required roles. That does however mean that the deployment has to run with Owner priviledges.
 
-From version 1.5.0 of module it is required that one of the agent pools have name "default". This due to change when using multiple node pools in azurerm provider 1.37.0.
+From version 1.5.0 of module it is required that one of the agent pools have name "default". This due to change when using multiple node pools in azurerm provider 1.37.0. This will break existing clusters if it uses a different name for default pool.
 
 ## Usage
 
@@ -13,7 +13,7 @@ Example uses [tau](https://github.com/avinor/tau) for deployment.
 ```terraform
 module {
     source = "avinor/kubernetes/azurerm"
-    version = "1.0.02
+    version = "1.5.0"
 }
 
 inputs {
@@ -21,7 +21,7 @@ inputs {
     resource_group_name = "simple-aks-rg"
     location = "westeurope"
     service_cidr = "10.0.0.0/24"
-    kubernetes_version = "1.13.5"
+    kubernetes_version = "1.15.5"
 
     service_principal = {
         client_id = "00000000-0000-0000-0000-000000000000"
@@ -58,7 +58,7 @@ dependency "azuread" {
 
 module {
     source = "avinor/kubernetes/azurerm"
-    version = "1.0.02
+    version = "1.5.0"
 }
 
 inputs {
@@ -66,7 +66,7 @@ inputs {
     resource_group_name = "simple-aks-rg"
     location = "westeurope"
     service_cidr = "10.0.0.0/24"
-    kubernetes_version = "1.13.5"
+    kubernetes_version = "1.15.5"
 
     service_principal = {
         client_id = dependency.service_principal.outputs.client_id
