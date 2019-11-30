@@ -39,6 +39,7 @@ locals {
   agent_pools = { for ap in local.agent_pools_with_defaults :
     ap.name => ap.os_type == "Linux" ? merge(local.default_linux_node_profile, ap) : merge(local.default_windows_node_profile, ap)
   }
+  default_pool = var.agent_pools[0].name
 
   # Determine which load balancer to use
   agent_pool_availability_zones_lb = [for ap in local.agent_pools : ap.availability_zones != null ? "Standard" : ""]
@@ -93,7 +94,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   enable_pod_security_policy      = var.enable_pod_security_policy
 
   dynamic "default_node_pool" {
-    for_each = { for k, v in local.agent_pools : k => v if k == "default" }
+    for_each = { for k, v in local.agent_pools : k => v if k == local.default_pool }
     iterator = ap
     content {
       name                = ap.value.name
@@ -177,7 +178,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "aks" {
-  for_each = { for k, v in local.agent_pools : k => v if k != "default" }
+  for_each = { for k, v in local.agent_pools : k => v if k != local.default_pool }
 
   name                  = each.key
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
