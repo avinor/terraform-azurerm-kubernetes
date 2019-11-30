@@ -279,8 +279,6 @@ resource "kubernetes_cluster_role" "impersonator" {
     resources  = ["users", "groups", "serviceaccounts"]
     verbs      = ["impersonate"]
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 resource "kubernetes_cluster_role_binding" "impersonator" {
@@ -301,8 +299,6 @@ resource "kubernetes_cluster_role_binding" "impersonator" {
     kind      = var.admins[count.index].kind
     name      = var.admins[count.index].name
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 #
@@ -319,8 +315,6 @@ resource "kubernetes_cluster_role" "containerlogs" {
     resources  = ["pods/log"]
     verbs      = ["get"]
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 resource "kubernetes_cluster_role_binding" "containerlogs" {
@@ -339,8 +333,6 @@ resource "kubernetes_cluster_role_binding" "containerlogs" {
     kind      = "User"
     name      = "clusterUser"
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 #
@@ -356,8 +348,6 @@ resource "kubernetes_service_account" "sa" {
   }
 
   automount_service_account_token = true
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 resource "kubernetes_cluster_role_binding" "sa" {
@@ -378,8 +368,6 @@ resource "kubernetes_cluster_role_binding" "sa" {
     name      = var.service_accounts[count.index].name
     namespace = var.service_accounts[count.index].namespace
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 data "kubernetes_secret" "sa" {
@@ -399,8 +387,6 @@ resource "kubernetes_namespace" "tiller" {
   metadata {
     name = "tiller"
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 module "tiller" {
@@ -427,8 +413,6 @@ resource "kubernetes_cluster_role" "tiller" {
     resources  = ["pods"]
     verbs      = ["get", "list"]
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
 
 resource "kubernetes_role_binding" "tiller" {
@@ -450,6 +434,4 @@ resource "kubernetes_role_binding" "tiller" {
     kind      = var.admins[count.index].kind
     name      = var.admins[count.index].name
   }
-
-  depends_on = ["azurerm_kubernetes_cluster.aks"]
 }
