@@ -1,9 +1,13 @@
 terraform {
   required_version = ">= 0.12.6"
   required_providers {
-    azurerm    = "~> 1.44.0"
     kubernetes = "~> 1.9.0"
   }
+}
+
+provider azurerm {
+  version = "~> 2.7.0"
+  features {}
 }
 
 locals {
@@ -391,7 +395,7 @@ resource "kubernetes_namespace" "tiller" {
 }
 
 module "tiller" {
-  source = "iplabs/tiller/kubernetes"
+  source  = "iplabs/tiller/kubernetes"
   version = "3.2.1"
 
   tiller_version   = var.tiller_version
