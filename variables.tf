@@ -104,11 +104,6 @@ variable "addons" {
   default     = { dashboard = false, oms_agent = false, oms_agent_workspace_id = null, policy = true }
 }
 
-variable "tiller_version" {
-  description = "Set to tiller version that should be installed. Will be removed once Helm v3 is released."
-  default     = "2.16.1"
-}
-
 variable "tags" {
   description = "Tags to apply to all resources created."
   type        = map(string)
