@@ -96,10 +96,6 @@ Diagnostics settings can be sent to either storage account, event hub or Log Ana
 
 Setting `all` in logs and metrics will send all possible diagnostics to destination. If not using `all` type name of categories to send.
 
-## Helm
-
-Cluster come with Helm tiller installed. To change the version it installs set the `tiller_version` variable. Once Helm v3 is released this will be removed and manual installation of tiller will not be required.
-
 ## Dashboard
 
 AKS comes with dashboard preinstalled, but currently it does not work well with rbac enabled. It is possible to open the dashboard by running `az aks browse`, but it does not have access to read any resources. This could be resolved by granting the dashboard service account access to read, or enable token authentication on the dashboard. Both requires additional configuration after cluster has been deployed.
