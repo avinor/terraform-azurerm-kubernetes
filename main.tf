@@ -384,24 +384,6 @@ data "kubernetes_secret" "sa" {
   }
 }
 
-#
-# Tiller setup
-#
-
-resource "kubernetes_namespace" "tiller" {
-  metadata {
-    name = "tiller"
-  }
-}
-
-module "tiller" {
-  source  = "iplabs/tiller/kubernetes"
-  version = "3.2.1"
-
-  tiller_version   = var.tiller_version
-  tiller_namespace = kubernetes_namespace.tiller.metadata.0.name
-}
-
 resource "kubernetes_cluster_role" "tiller" {
   metadata {
     name = "tiller-access"
