@@ -6,7 +6,7 @@ terraform {
 }
 
 provider azurerm {
-  version = "~> 2.25.0"
+  version = "~> 2.30.0"
   features {}
 }
 
@@ -56,9 +56,11 @@ locals {
   diag_kube_logs = [
     "kube-apiserver",
     "kube-audit",
+    "kube-audit-admin",
     "kube-controller-manager",
     "kube-scheduler",
     "cluster-autoscaler",
+    "guard",
   ]
   diag_kube_metrics = [
     "AllMetrics",
