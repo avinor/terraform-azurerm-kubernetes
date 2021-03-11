@@ -8,6 +8,7 @@ module "simple" {
     kubernetes_version = "1.13.5"
     
     service_principal = {
+        object_id = "00000000-0000-0000-0000-000000000000"
         client_id = "00000000-0000-0000-0000-000000000000"
         client_secret = "00000000-0000-0000-0000-000000000000"
     }
