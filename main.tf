@@ -6,21 +6,22 @@ terraform {
 }
 
 provider azurerm {
-  version = "~> 2.50.0"
+  version = "~> 2.53.0"
   features {}
 }
 
 locals {
   default_agent_profile = {
-    count               = 1
-    vm_size             = "Standard_D2_v3"
-    os_type             = "Linux"
-    availability_zones  = null
-    enable_auto_scaling = false
-    min_count           = null
-    max_count           = null
-    type                = "VirtualMachineScaleSets"
-    node_taints         = null
+    count                = 1
+    vm_size              = "Standard_D2_v3"
+    os_type              = "Linux"
+    availability_zones   = null
+    enable_auto_scaling  = false
+    min_count            = null
+    max_count            = null
+    type                 = "VirtualMachineScaleSets"
+    node_taints          = null
+    orchestrator_version = null
   }
 
   # Defaults for Linux profile
@@ -103,18 +104,19 @@ resource "azurerm_kubernetes_cluster" "aks" {
     for_each = { for k, v in local.agent_pools : k => v if k == local.default_pool }
     iterator = ap
     content {
-      name                = ap.value.name
-      node_count          = ap.value.count
-      vm_size             = ap.value.vm_size
-      availability_zones  = ap.value.availability_zones
-      enable_auto_scaling = ap.value.enable_auto_scaling
-      min_count           = ap.value.min_count
-      max_count           = ap.value.max_count
-      max_pods            = ap.value.max_pods
-      os_disk_size_gb     = ap.value.os_disk_size_gb
-      type                = ap.value.type
-      vnet_subnet_id      = ap.value.vnet_subnet_id
-      node_taints         = ap.value.node_taints
+      name                 = ap.value.name
+      node_count           = ap.value.count
+      vm_size              = ap.value.vm_size
+      availability_zones   = ap.value.availability_zones
+      enable_auto_scaling  = ap.value.enable_auto_scaling
+      min_count            = ap.value.min_count
+      max_count            = ap.value.max_count
+      max_pods             = ap.value.max_pods
+      os_disk_size_gb      = ap.value.os_disk_size_gb
+      type                 = ap.value.type
+      vnet_subnet_id       = ap.value.vnet_subnet_id
+      node_taints          = ap.value.node_taints
+      orchestrator_version = ap.value.orchestrator_version
     }
   }
 
@@ -199,6 +201,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "aks" {
   os_type               = each.value.os_type
   vnet_subnet_id        = each.value.vnet_subnet_id
   node_taints           = each.value.node_taints
+  orchestrator_version  = each.value.orchestrator_version
 }
 
 resource "azurerm_monitor_diagnostic_setting" "aks" {

@@ -30,12 +30,20 @@ variable "agent_pools" {
 
 variable "service_principal" {
   description = "Service principal to connect to cluster."
-  type        = object({ object_id = string, client_id = string, client_secret = string })
+  type = object({
+    object_id     = string,
+    client_id     = string,
+    client_secret = string
+  })
 }
 
 variable "azure_active_directory" {
   description = "Azure AD configuration for enabling rbac."
-  type        = object({ client_app_id = string, server_app_id = string, server_app_secret = string })
+  type = object({
+    client_app_id     = string
+    server_app_id     = string
+    server_app_secret = string
+  })
 }
 
 variable "api_server_authorized_ip_ranges" {
@@ -46,20 +54,29 @@ variable "api_server_authorized_ip_ranges" {
 
 variable "linux_profile" {
   description = "Username and ssh key for accessing Linux machines with ssh."
-  type        = object({ username = string, ssh_key = string })
-  default     = null
+  type = object({
+    username = string
+    ssh_key  = string
+  })
+  default = null
 }
 
 variable "windows_profile" {
   description = "Admin username and password for Windows hosts."
-  type        = object({ username = string, password = string })
-  default     = null
+  type = object({
+    username = string
+    password = string
+  })
+  default = null
 }
 
 variable "admins" {
   description = "List of Azure AD object ids that should be able to impersonate admin user."
-  type        = list(object({ kind = string, name = string }))
-  default     = []
+  type = list(object({
+    kind = string
+    name = string
+  }))
+  default = []
 }
 
 variable "container_registries" {
@@ -82,8 +99,12 @@ variable "managed_identities" {
 
 variable "service_accounts" {
   description = "List of service accounts to create and their roles."
-  type        = list(object({ name = string, namespace = string, role = string }))
-  default     = []
+  type = list(object({
+    name      = string
+    namespace = string
+    role      = string
+  }))
+  default = []
 }
 
 variable "enable_pod_security_policy" {
@@ -94,14 +115,29 @@ variable "enable_pod_security_policy" {
 
 variable "diagnostics" {
   description = "Diagnostic settings for those resources that support it. See README.md for details on configuration."
-  type        = object({ destination = string, eventhub_name = string, logs = list(string), metrics = list(string) })
-  default     = null
+  type = object({
+    destination   = string
+    eventhub_name = string
+    logs          = list(string)
+    metrics       = list(string)
+  })
+  default = null
 }
 
 variable "addons" {
   description = "Addons to enable / disable."
-  type        = object({ dashboard = bool, oms_agent = bool, oms_agent_workspace_id = string, policy = bool })
-  default     = { dashboard = false, oms_agent = false, oms_agent_workspace_id = null, policy = true }
+  type = object({
+    dashboard              = bool
+    oms_agent              = bool
+    oms_agent_workspace_id = string
+    policy                 = bool
+  })
+  default = {
+    dashboard              = false
+    oms_agent              = false
+    oms_agent_workspace_id = null
+    policy                 = true
+  }
 }
 
 variable "tags" {
