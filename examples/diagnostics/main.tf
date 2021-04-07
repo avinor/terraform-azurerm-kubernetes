@@ -1,8 +1,8 @@
-module "simple" {
+module "diagnostics" {
   source = "../../"
 
-  name                = "simple"
-  resource_group_name = "simple-aks-rg"
+  name                = "diagnostics"
+  resource_group_name = "diagnostics-aks-rg"
   location            = "westeurope"
   service_cidr        = "10.241.0.0/24"
   kubernetes_version  = "1.18.14"
@@ -26,4 +26,12 @@ module "simple" {
       vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1"
     },
   ]
+
+  diagnostics = {
+    destination   = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-log-analytics"
+    eventhub_name = null
+    logs          = ["kube-audit-admin", "guard"]
+    metrics       = ["all"]
+  }
+
 }
