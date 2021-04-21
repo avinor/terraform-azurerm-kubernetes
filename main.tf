@@ -262,6 +262,11 @@ resource "azurerm_role_assignment" "msi" {
   scope                = var.managed_identities[count.index]
   role_definition_name = "Managed Identity Operator"
   principal_id         = var.service_principal.object_id
+
+  // For now ignore changes for scope because of lower/upper case issue with resourceId forces a recreate of this resource.
+  lifecycle {
+    ignore_changes = [scope]
+  }
 }
 
 # Configure cluster
