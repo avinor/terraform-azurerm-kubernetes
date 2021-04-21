@@ -262,6 +262,10 @@ resource "azurerm_role_assignment" "msi" {
   scope                = var.managed_identities[count.index]
   role_definition_name = "Managed Identity Operator"
   principal_id         = var.service_principal.object_id
+
+  lifecycle {
+    ignore_changes = [scope]
+  }
 }
 
 # Configure cluster
