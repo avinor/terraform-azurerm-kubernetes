@@ -140,6 +140,20 @@ variable "addons" {
   }
 }
 
+variable "key_vault_secrets_provider" {
+  description = "Key Vault secrets provider settings"
+  type = object({
+    enabled                  = bool
+    secret_rotation_enabled  = bool
+    secret_rotation_interval = string
+  })
+  default = {
+    enabled                  = false
+    secret_rotation_enabled  = false
+    secret_rotation_interval = "2m"
+  }
+}
+
 variable "tags" {
   description = "Tags to apply to all resources created."
   type        = map(string)

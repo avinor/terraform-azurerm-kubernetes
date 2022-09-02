@@ -7,7 +7,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.90.0"
+      version = "~> 2.99.0"
     }
   }
 }
@@ -117,18 +117,24 @@ resource "azurerm_kubernetes_cluster" "aks" {
     client_secret = var.service_principal.client_secret
   }
 
-  addon_profile {
-    oms_agent {
-      enabled                    = var.addons.oms_agent
-      log_analytics_workspace_id = var.addons.oms_agent ? var.addons.oms_agent_workspace_id : null
-    }
 
-    kube_dashboard {
-      enabled = var.addons.dashboard
-    }
+  // Former addons
+  azure_policy_enabled = var.addons.policy
 
-    azure_policy {
-      enabled = var.addons.policy
+  dynamic "key_vault_secrets_provider" {
+    for_each = var.key_vault_secrets_provider.enabled ? [true] : []
+    iterator = i
+    content {
+      secret_rotation_enabled  = var.key_vault_secrets_provider.secret_rotation_enabled
+      secret_rotation_interval = var.key_vault_secrets_provider.secret_rotation_interval
+    }
+  }
+
+  dynamic "oms_agent" {
+    for_each = var.addons.oms_agent ? [true] : []
+    iterator = i
+    content {
+      log_analytics_workspace_id = var.addons.oms_agent_workspace_id
     }
   }
 
@@ -164,14 +170,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
     load_balancer_sku = local.load_balancer_sku
   }
 
-  role_based_access_control {
-    enabled = true
+  role_based_access_control_enabled = true
 
-    azure_active_directory {
-      client_app_id     = var.azure_active_directory.client_app_id
-      server_app_id     = var.azure_active_directory.server_app_id
-      server_app_secret = var.azure_active_directory.server_app_secret
-    }
+  azure_active_directory_role_based_access_control {
+    client_app_id     = var.azure_active_directory.client_app_id
+    server_app_id     = var.azure_active_directory.server_app_id
+    server_app_secret = var.azure_active_directory.server_app_secret
   }
 
   tags = var.tags
