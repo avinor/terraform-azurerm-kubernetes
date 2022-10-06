@@ -122,7 +122,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   dynamic "key_vault_secrets_provider" {
     for_each = var.key_vault_secrets_provider.enabled ? [true] : []
-    iterator = i
     content {
       secret_rotation_enabled  = var.key_vault_secrets_provider.secret_rotation_enabled
       secret_rotation_interval = var.key_vault_secrets_provider.secret_rotation_interval
@@ -131,7 +130,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   dynamic "oms_agent" {
     for_each = var.oms_agent_log_analytics_workspace_id != null ? [true] : []
-    iterator = i
     content {
       log_analytics_workspace_id = var.oms_agent_log_analytics_workspace_id
     }
@@ -139,7 +137,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   dynamic "linux_profile" {
     for_each = var.linux_profile != null ? [true] : []
-    iterator = lp
     content {
       admin_username = var.linux_profile.username
 
@@ -151,7 +148,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   dynamic "windows_profile" {
     for_each = var.windows_profile != null ? [true] : []
-    iterator = wp
     content {
       admin_username = var.windows_profile.username
       admin_password = var.windows_profile.password
