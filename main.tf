@@ -3,11 +3,11 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 1.9.0"
+      version = "~> 2.13.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.99.0"
+      version = "~> 3.25.0"
     }
   }
 }
@@ -44,17 +44,19 @@ locals {
     os_disk_size_gb = 200
   }
 
-  agent_pools_with_defaults = [for ap in var.agent_pools :
+  agent_pools_with_defaults = [
+    for ap in var.agent_pools :
     merge(local.default_agent_profile, ap)
   ]
-  agent_pools = { for ap in local.agent_pools_with_defaults :
+  agent_pools = {
+    for ap in local.agent_pools_with_defaults :
     ap.name => ap.os_type == "Linux" ? merge(local.default_linux_node_profile, ap) : merge(local.default_windows_node_profile, ap)
   }
   default_pool = var.agent_pools[0].name
 
   # Determine which load balancer to use
-  agent_pool_availability_zones_lb = [for ap in local.agent_pools : ap.availability_zones != null ? "Standard" : ""]
-  load_balancer_sku                = coalesce(flatten([local.agent_pool_availability_zones_lb, ["Standard"]])...)
+  agent_pool_availability_zones_lb = [for ap in local.agent_pools : ap.availability_zones != null ? "standard" : ""]
+  load_balancer_sku                = coalesce(flatten([local.agent_pool_availability_zones_lb, ["standard"]])...)
 
   # Distinct subnets
   agent_pool_subnets = distinct([for ap in local.agent_pools : ap.vnet_subnet_id])
@@ -90,7 +92,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
   kubernetes_version              = var.kubernetes_version
   api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
   node_resource_group             = var.node_resource_group
-  enable_pod_security_policy      = var.enable_pod_security_policy
 
   dynamic "default_node_pool" {
     for_each = { for k, v in local.agent_pools : k => v if k == local.default_pool }
@@ -99,7 +100,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
       name                 = ap.value.name
       node_count           = ap.value.count
       vm_size              = ap.value.vm_size
-      availability_zones   = ap.value.availability_zones
+      zones                = ap.value.availability_zones
       enable_auto_scaling  = ap.value.enable_auto_scaling
       min_count            = ap.value.min_count
       max_count            = ap.value.max_count
@@ -117,9 +118,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     client_secret = var.service_principal.client_secret
   }
 
-
-  // Former addons
-  azure_policy_enabled = var.addons.policy
+  azure_policy_enabled = var.azure_policy_enabled
 
   dynamic "key_vault_secrets_provider" {
     for_each = var.key_vault_secrets_provider.enabled ? [true] : []
@@ -131,10 +130,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   dynamic "oms_agent" {
-    for_each = var.addons.oms_agent ? [true] : []
+    for_each = var.oms_agent_log_analytics_workspace_id != null ? [true] : []
     iterator = i
     content {
-      log_analytics_workspace_id = var.addons.oms_agent_workspace_id
+      log_analytics_workspace_id = var.oms_agent_log_analytics_workspace_id
     }
   }
 
@@ -187,7 +186,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "aks" {
   name                  = each.key
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
   vm_size               = each.value.vm_size
-  availability_zones    = each.value.availability_zones
+  zones                 = each.value.availability_zones
   enable_auto_scaling   = each.value.enable_auto_scaling
   node_count            = each.value.count
   min_count             = each.value.min_count
@@ -198,6 +197,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "aks" {
   vnet_subnet_id        = each.value.vnet_subnet_id
   node_taints           = each.value.node_taints
   orchestrator_version  = each.value.orchestrator_version
+
+  tags = var.tags
 }
 
 data "azurerm_monitor_diagnostic_categories" "default" {
@@ -214,7 +215,7 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
   storage_account_id             = local.parsed_diag.storage_account_id
 
   dynamic "log" {
-    for_each = data.azurerm_monitor_diagnostic_categories.default.logs
+    for_each = data.azurerm_monitor_diagnostic_categories.default.log_category_types
     content {
       category = log.value
       enabled  = contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, log.value)
