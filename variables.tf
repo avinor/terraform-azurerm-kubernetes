@@ -107,12 +107,6 @@ variable "service_accounts" {
   default = []
 }
 
-variable "enable_pod_security_policy" {
-  description = "Whether Pod Security Policies are enabled. Note that this also requires role based access control to be enabled."
-  type        = bool
-  default     = true
-}
-
 variable "diagnostics" {
   description = "Diagnostic settings for those resources that support it. See README.md for details on configuration."
   type = object({
@@ -124,24 +118,20 @@ variable "diagnostics" {
   default = null
 }
 
-variable "addons" {
-  description = "Addons to enable / disable."
-  type = object({
-    dashboard              = bool
-    oms_agent              = bool
-    oms_agent_workspace_id = string
-    policy                 = bool
-  })
-  default = {
-    dashboard              = false
-    oms_agent              = false
-    oms_agent_workspace_id = null
-    policy                 = true
-  }
+variable "azure_policy_enabled" {
+  description = "Should the Azure Policy Add-On be enabled?"
+  type        = bool
+  default     = true
+}
+
+variable "oms_agent_log_analytics_workspace_id" {
+  description = "The ID of the Log Analytics Workspace which the OMS Agent should send data to. if value is null, no agent is deployed."
+  type        = string
+  default     = null
 }
 
 variable "key_vault_secrets_provider" {
-  description = "Key Vault secrets provider settings"
+  description = "Key Vault secrets provider settings."
   type = object({
     enabled                  = bool
     secret_rotation_enabled  = bool
