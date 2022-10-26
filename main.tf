@@ -1,13 +1,13 @@
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 1.3"
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.13.0"
+      version = "~> 2.14.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.25.0"
+      version = "~> 3.28.0"
     }
   }
 }
@@ -382,15 +382,6 @@ resource "kubernetes_cluster_role_binding" "sa" {
   subject {
     kind      = "ServiceAccount"
     name      = var.service_accounts[count.index].name
-    namespace = var.service_accounts[count.index].namespace
-  }
-}
-
-data "kubernetes_secret" "sa" {
-  count = length(var.service_accounts)
-
-  metadata {
-    name      = kubernetes_service_account.sa[count.index].default_secret_name
     namespace = var.service_accounts[count.index].namespace
   }
 }
