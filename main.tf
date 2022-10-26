@@ -385,12 +385,3 @@ resource "kubernetes_cluster_role_binding" "sa" {
     namespace = var.service_accounts[count.index].namespace
   }
 }
-
-data "kubernetes_secret" "sa" {
-  count = length(var.service_accounts)
-
-  metadata {
-    name      = kubernetes_service_account.sa[count.index].default_secret_name
-    namespace = var.service_accounts[count.index].namespace
-  }
-}
