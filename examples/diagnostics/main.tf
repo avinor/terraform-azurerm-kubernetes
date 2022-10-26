@@ -28,10 +28,9 @@ module "diagnostics" {
   ]
 
   diagnostics = {
-    destination   = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-log-analytics"
-    eventhub_name = null
-    logs          = ["kube-audit-admin", "guard"]
-    metrics       = ["all"]
+    destination = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-log-analytics"
+    logs        = ["kube-audit-admin", "guard"]
+    metrics     = ["all"]
   }
 
 }

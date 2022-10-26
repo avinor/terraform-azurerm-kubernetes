@@ -111,7 +111,7 @@ variable "diagnostics" {
   description = "Diagnostic settings for those resources that support it. See README.md for details on configuration."
   type = object({
     destination   = string
-    eventhub_name = string
+    eventhub_name = optional(string)
     logs          = list(string)
     metrics       = list(string)
   })
