@@ -80,18 +80,21 @@ locals {
 resource "azurerm_resource_group" "aks" {
   name     = var.resource_group_name
   location = var.location
-
-  tags = var.tags
+  tags     = var.tags
 }
 
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                            = "${var.name}-aks"
-  location                        = azurerm_resource_group.aks.location
-  resource_group_name             = azurerm_resource_group.aks.name
-  dns_prefix                      = var.name
-  kubernetes_version              = var.kubernetes_version
-  api_server_authorized_ip_ranges = var.api_server_authorized_ip_ranges
-  node_resource_group             = var.node_resource_group
+  name                              = "${var.name}-aks"
+  location                          = azurerm_resource_group.aks.location
+  resource_group_name               = azurerm_resource_group.aks.name
+  dns_prefix                        = var.name
+  kubernetes_version                = var.kubernetes_version
+  api_server_authorized_ip_ranges   = var.api_server_authorized_ip_ranges
+  node_resource_group               = var.node_resource_group
+  azure_policy_enabled              = var.azure_policy_enabled
+  role_based_access_control_enabled = true
+  tags                              = var.tags
+
 
   dynamic "default_node_pool" {
     for_each = { for k, v in local.agent_pools : k => v if k == local.default_pool }
@@ -117,8 +120,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
     client_id     = var.service_principal.client_id
     client_secret = var.service_principal.client_secret
   }
-
-  azure_policy_enabled = var.azure_policy_enabled
 
   dynamic "key_vault_secrets_provider" {
     for_each = var.key_vault_secrets_provider.enabled ? [true] : []
@@ -165,15 +166,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
     load_balancer_sku = local.load_balancer_sku
   }
 
-  role_based_access_control_enabled = true
-
   azure_active_directory_role_based_access_control {
     client_app_id     = var.azure_active_directory.client_app_id
     server_app_id     = var.azure_active_directory.server_app_id
     server_app_secret = var.azure_active_directory.server_app_secret
   }
-
-  tags = var.tags
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "aks" {
@@ -202,7 +199,8 @@ data "azurerm_monitor_diagnostic_categories" "default" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "aks" {
-  count                          = var.diagnostics != null ? 1 : 0
+  count = var.diagnostics != null ? 1 : 0
+
   name                           = "${var.name}-aks-diag"
   target_resource_id             = azurerm_kubernetes_cluster.aks.id
   log_analytics_workspace_id     = local.parsed_diag.log_analytics_id
