@@ -7,7 +7,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.38.0"
+      version = "~> 3.51.0"
     }
   }
 }
@@ -94,7 +94,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
   azure_policy_enabled              = var.azure_policy_enabled
   role_based_access_control_enabled = true
   tags                              = var.tags
-
 
   dynamic "default_node_pool" {
     for_each = { for k, v in local.agent_pools : k => v if k == local.default_pool }
