@@ -158,7 +158,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
     network_plugin     = "azure"
     network_policy     = "azure"
     dns_service_ip     = cidrhost(var.service_cidr, 10)
-    docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = var.service_cidr
 
     # Use Standard if availability zones are set, Basic otherwise
