@@ -216,11 +216,13 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
   eventhub_name                  = local.parsed_diag.event_hub_auth_id != null ? var.diagnostics.eventhub_name : null
   storage_account_id             = local.parsed_diag.storage_account_id
 
-  dynamic "log" {
-    for_each = data.azurerm_monitor_diagnostic_categories.default.log_category_types
+  dynamic "enabled_log" {
+    for_each = {
+      for k, v in data.azurerm_monitor_diagnostic_categories.default.log_category_types : k => v
+      if contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, v)
+    }
     content {
-      category = log.value
-      enabled  = contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, log.value)
+      category = enabled_log.value
 
       retention_policy {
         enabled = false
