@@ -6,7 +6,7 @@ reasons it will only deploy a rbac enabled clusters.
 From version 5.0.0 AKS is configured with a system assigned managed identity that is automatically created. It is not
 required to grant the manged identity any roles, this module will make sure to grant required roles. That does however
 mean that the deployment has to run with Owner privileges. Migrating from service principal identity from earlier
-version is supported. Make sure to validate role assignments when upgrading to version 5.0.0 and higher.
+version is supported. Make sure to validate role assignments when upgrading to version 5.0.0 or higher.
 
 From version 1.5.0 of module it will assign the first node pool defined as the default one, this cannot be changed
 later. If changing any variable that requires node pool to be recreated it will recreate entire cluster, that includes
