@@ -28,24 +28,6 @@ variable "agent_pools" {
   type        = list(any)
 }
 
-variable "service_principal" {
-  description = "Service principal to connect to cluster."
-  type = object({
-    object_id     = string
-    client_id     = string
-    client_secret = string
-  })
-}
-
-variable "azure_active_directory" {
-  description = "Azure AD configuration for enabling rbac."
-  type = object({
-    client_app_id     = string
-    server_app_id     = string
-    server_app_secret = string
-  })
-}
-
 variable "api_server_authorized_ip_ranges" {
   description = "The IP ranges to whitelist for incoming traffic to the masters."
   type        = list(string)
@@ -68,6 +50,12 @@ variable "windows_profile" {
     password = string
   })
   default = null
+}
+
+variable "cluster_admins" {
+  description = "List of Azure AD object ids that should be cluster admins"
+  type        = list(string)
+  default     = []
 }
 
 variable "admins" {

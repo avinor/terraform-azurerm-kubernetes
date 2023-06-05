@@ -7,18 +7,6 @@ module "addon" {
   service_cidr        = "10.241.0.0/24"
   kubernetes_version  = "1.23.8"
 
-  service_principal = {
-    object_id     = "00000000-0000-0000-0000-000000000000"
-    client_id     = "00000000-0000-0000-0000-000000000000"
-    client_secret = "00000000-0000-0000-0000-000000000000"
-  }
-
-  azure_active_directory = {
-    client_app_id     = "00000000-0000-0000-0000-000000000000"
-    server_app_id     = "00000000-0000-0000-0000-000000000000"
-    server_app_secret = "00000000-0000-0000-0000-000000000000"
-  }
-
   agent_pools = [
     {
       name                 = "linux"

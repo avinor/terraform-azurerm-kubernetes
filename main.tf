@@ -7,7 +7,11 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.51.0"
+      version = "~> 3.57.0"
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 2.39.0"
     }
   }
 }
@@ -83,6 +87,13 @@ resource "azurerm_resource_group" "aks" {
   tags     = var.tags
 }
 
+resource "azurerm_user_assigned_identity" "msi" {
+  location            = var.location
+  name                = format("%s-msi", var.name)
+  resource_group_name = azurerm_resource_group.aks.name
+  tags                = var.tags
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                              = "${var.name}-aks"
   location                          = azurerm_resource_group.aks.location
@@ -113,11 +124,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
       node_taints          = ap.value.node_taints
       orchestrator_version = ap.value.orchestrator_version
     }
-  }
-
-  service_principal {
-    client_id     = var.service_principal.client_id
-    client_secret = var.service_principal.client_secret
   }
 
   dynamic "key_vault_secrets_provider" {
@@ -155,19 +161,23 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   network_profile {
-    network_plugin     = "azure"
-    network_policy     = "azure"
-    dns_service_ip     = cidrhost(var.service_cidr, 10)
-    service_cidr       = var.service_cidr
+    network_plugin = "azure"
+    network_policy = "azure"
+    dns_service_ip = cidrhost(var.service_cidr, 10)
+    service_cidr   = var.service_cidr
 
     # Use Standard if availability zones are set, Basic otherwise
     load_balancer_sku = local.load_balancer_sku
   }
 
   azure_active_directory_role_based_access_control {
-    client_app_id     = var.azure_active_directory.client_app_id
-    server_app_id     = var.azure_active_directory.server_app_id
-    server_app_secret = var.azure_active_directory.server_app_secret
+    managed                = true
+    admin_group_object_ids = var.cluster_admins
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.msi.id]
   }
 }
 
@@ -206,11 +216,13 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
   eventhub_name                  = local.parsed_diag.event_hub_auth_id != null ? var.diagnostics.eventhub_name : null
   storage_account_id             = local.parsed_diag.storage_account_id
 
-  dynamic "log" {
-    for_each = data.azurerm_monitor_diagnostic_categories.default.log_category_types
+  dynamic "enabled_log" {
+    for_each = {
+      for k, v in data.azurerm_monitor_diagnostic_categories.default.log_category_types : k => v
+      if contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, v)
+    }
     content {
-      category = log.value
-      enabled  = contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, log.value)
+      category = enabled_log.value
 
       retention_policy {
         enabled = false
@@ -240,7 +252,7 @@ resource "azurerm_role_assignment" "acr" {
 
   scope                = var.container_registries[count.index]
   role_definition_name = "AcrPull"
-  principal_id         = var.service_principal.object_id
+  principal_id         = azurerm_user_assigned_identity.msi.principal_id
 }
 
 resource "azurerm_role_assignment" "subnet" {
@@ -248,7 +260,7 @@ resource "azurerm_role_assignment" "subnet" {
 
   scope                = local.agent_pool_subnets[count.index]
   role_definition_name = "Network Contributor"
-  principal_id         = var.service_principal.object_id
+  principal_id         = azurerm_user_assigned_identity.msi.principal_id
 }
 
 resource "azurerm_role_assignment" "storage" {
@@ -256,7 +268,7 @@ resource "azurerm_role_assignment" "storage" {
 
   scope                = var.storage_contributor[count.index]
   role_definition_name = "Storage Account Contributor"
-  principal_id         = var.service_principal.object_id
+  principal_id         = azurerm_user_assigned_identity.msi.principal_id
 }
 
 resource "azurerm_role_assignment" "msi" {
@@ -264,7 +276,7 @@ resource "azurerm_role_assignment" "msi" {
 
   scope                = var.managed_identities[count.index]
   role_definition_name = "Managed Identity Operator"
-  principal_id         = var.service_principal.object_id
+  principal_id         = azurerm_user_assigned_identity.msi.principal_id
 }
 
 # Configure cluster

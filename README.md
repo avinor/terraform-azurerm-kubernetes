@@ -1,13 +1,12 @@
 # Kubernetes
 
 Terraform module to deploy a Kubernetes cluster on Azure by using the managed Kubernetes solution AKS. For security
-reasons it will only deploy a rbac enabled clusters and requires an Azure AD application for authenticating users. This
-account can be created with the
-module [avinor/kubernetes-azuread-integration/azurerm](https://github.com/avinor/terraform-azurerm-kubernetes-azuread-integration)
-. Service principal required can be created
-with [avinor/service-principal/azurerm](https://github.com/avinor/terraform-azurerm-service-principal) module. It is not
-required to grant the service principal any roles, this module will make sure to grant required roles. That does however
-mean that the deployment has to run with Owner priviledges.
+reasons it will only deploy a rbac enabled clusters.
+
+From version 5.0.0 AKS is configured with a system assigned managed identity that is automatically created. It is not
+required to grant the manged identity any roles, this module will make sure to grant required roles. That does however
+mean that the deployment has to run with Owner privileges. Migrating from service principal identity from earlier
+version is supported. Make sure to validate role assignments when upgrading to version 5.0.0 or higher.
 
 From version 1.5.0 of module it will assign the first node pool defined as the default one, this cannot be changed
 later. If changing any variable that requires node pool to be recreated it will recreate entire cluster, that includes
@@ -15,30 +14,18 @@ name, vm size etc. Make sure this node pool is not changed after first deploymen
 
 ## Usage
 
-This example deploys a simple cluster with one node pool. The service principal and Azure AD integration secrets need to
-be changed.
+This example deploys a simple cluster with one node pool.
 
 ```terraform
 module "simple" {
   source  = "avinor/kubernetes/azurerm"
-  version = "1.5.0"
+  version = "5.0.0"
 
   name                = "simple"
   resource_group_name = "simple-aks-rg"
   location            = "westeurope"
   service_cidr        = "10.0.0.0/24"
   kubernetes_version  = "1.15.5"
-
-  service_principal = {
-    client_id     = "00000000-0000-0000-0000-000000000000"
-    client_secret = "00000000-0000-0000-0000-000000000000"
-  }
-
-  azure_active_directory = {
-    client_app_id     = "00000000-0000-0000-0000-000000000000"
-    server_app_id     = "00000000-0000-0000-0000-000000000000"
-    server_app_secret = "00000000-0000-0000-0000-000000000000"
-  }
 
   agent_pools = [
     {
