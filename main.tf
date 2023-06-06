@@ -247,6 +247,15 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
 
 # Assign roles
 
+# https://learn.microsoft.com/en-us/azure/aks/manage-azure-rbac
+resource "azurerm_role_assignment" "users" {
+  for_each = { for u in var.cluster_users : format("%s-%s", u.principal_id, u.namespace) => u }
+
+  principal_id         = each.value.principal_id
+  scope                = format("%s/namespaces/%s", azurerm_kubernetes_cluster.aks.id, each.value.namespace)
+  role_definition_name = "Azure Kubernetes Service RBAC Writer"
+}
+
 resource "azurerm_role_assignment" "acr" {
   count = length(var.container_registries)
 

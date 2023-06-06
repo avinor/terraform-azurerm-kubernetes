@@ -58,6 +58,15 @@ variable "cluster_admins" {
   default     = []
 }
 
+variable "cluster_users" {
+  description = "List of Azure AD object ids that should be cluster users."
+  type = list(object({
+    principal_id = string
+    namespace    = string
+  }))
+  default = []
+}
+
 variable "admins" {
   description = "List of Azure AD object ids that should be able to impersonate admin user."
   type = list(object({
