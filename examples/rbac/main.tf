@@ -6,6 +6,7 @@ module "rbac" {
   location            = "norwayeast"
   service_cidr        = "10.241.0.0/24"
   kubernetes_version  = "1.18.14"
+  azure_rbac_enabled  = true
 
   agent_pools = [
     {

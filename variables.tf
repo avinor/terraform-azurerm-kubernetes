@@ -121,6 +121,13 @@ variable "azure_policy_enabled" {
   default     = true
 }
 
+variable "azure_rbac_enabled" {
+  description = "Enable Azure RBAC to control authorization"
+  type        = bool
+  default     = false
+}
+
+
 variable "oms_agent_log_analytics_workspace_id" {
   description = "The ID of the Log Analytics Workspace which the OMS Agent should send data to. if value is null, no agent is deployed."
   type        = string
