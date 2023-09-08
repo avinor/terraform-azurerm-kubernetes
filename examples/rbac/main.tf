@@ -1,12 +1,13 @@
 module "rbac" {
   source = "../../"
 
-  name                = "rbac"
-  resource_group_name = "rbac-aks-rg"
-  location            = "norwayeast"
-  service_cidr        = "10.241.0.0/24"
-  kubernetes_version  = "1.18.14"
-  azure_rbac_enabled  = true
+  name                    = "rbac"
+  resource_group_name     = "rbac-aks-rg"
+  location                = "norwayeast"
+  service_cidr            = "10.241.0.0/24"
+  kubernetes_version      = "1.18.14"
+  azure_rbac_enabled      = true
+  node_os_channel_upgrade = "SecurityPatch"
 
   agent_pools = [
     {

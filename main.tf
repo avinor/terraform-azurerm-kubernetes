@@ -100,11 +100,22 @@ resource "azurerm_kubernetes_cluster" "aks" {
   resource_group_name               = azurerm_resource_group.aks.name
   dns_prefix                        = var.name
   kubernetes_version                = var.kubernetes_version
-  api_server_authorized_ip_ranges   = var.api_server_authorized_ip_ranges
   node_resource_group               = var.node_resource_group
   azure_policy_enabled              = var.azure_policy_enabled
+  node_os_channel_upgrade           = var.node_os_channel_upgrade
   role_based_access_control_enabled = true
   tags                              = var.tags
+
+  dynamic "maintenance_window_node_os" {
+    for_each = var.maintenance_window_node_os != null ? [1] : []
+    content {
+      frequency   = var.maintenance_window_node_os.frequency
+      interval    = var.maintenance_window_node_os.interval
+      duration    = var.maintenance_window_node_os.duration
+      day_of_week = var.maintenance_window_node_os.day_of_week
+      start_time  = var.maintenance_window_node_os.start_time
+    }
+  }
 
   dynamic "default_node_pool" {
     for_each = { for k, v in local.agent_pools : k => v if k == local.default_pool }
