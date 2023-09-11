@@ -18,6 +18,28 @@ variable "kubernetes_version" {
   description = "Version of Kubernetes to deploy."
 }
 
+variable "node_os_channel_upgrade" {
+  description = "The upgrade channel for this Kubernetes Cluster Nodes' OS Image."
+  default     = "Unmanaged"
+}
+
+variable "maintenance_window_node_os" {
+  description = "Maintenance window of node os upgrades."
+  type = object({
+    frequency   = optional(string)
+    interval    = optional(number)
+    duration    = optional(number)
+    day_of_week = optional(string)  # Required if frequency is weekly.
+    start_time  = optional(string)
+  })
+  default = {
+    frequency   = "Daily"
+    interval    = 1
+    duration    = 4
+    start_time  = "00:00" # UTC
+  }
+}
+
 variable "node_resource_group" {
   description = "The name of the Resource Group where the Kubernetes Nodes should exist."
   default     = null
@@ -26,12 +48,6 @@ variable "node_resource_group" {
 variable "agent_pools" {
   description = "A list of agent pools to create, each item supports same properties as `agent_pool_profile`. See README for default values."
   type        = list(any)
-}
-
-variable "api_server_authorized_ip_ranges" {
-  description = "The IP ranges to whitelist for incoming traffic to the masters."
-  type        = list(string)
-  default     = null
 }
 
 variable "linux_profile" {

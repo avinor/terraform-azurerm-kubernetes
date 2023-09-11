@@ -1,11 +1,11 @@
 module "addon" {
   source = "../../"
 
-  name                = "addons"
-  resource_group_name = "addons-aks-rg"
-  location            = "westeurope"
-  service_cidr        = "10.241.0.0/24"
-  kubernetes_version  = "1.23.8"
+  name                    = "addons"
+  resource_group_name     = "addons-aks-rg"
+  location                = "westeurope"
+  service_cidr            = "10.241.0.0/24"
+  kubernetes_version      = "1.23.8"
 
   agent_pools = [
     {

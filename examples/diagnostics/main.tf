@@ -1,11 +1,11 @@
 module "diagnostics" {
   source = "../../"
 
-  name                = "diagnostics"
-  resource_group_name = "diagnostics-aks-rg"
-  location            = "westeurope"
-  service_cidr        = "10.241.0.0/24"
-  kubernetes_version  = "1.18.14"
+  name                    = "diagnostics"
+  resource_group_name     = "diagnostics-aks-rg"
+  location                = "westeurope"
+  service_cidr            = "10.241.0.0/24"
+  kubernetes_version      = "1.18.14"
 
   agent_pools = [
     {
