@@ -26,7 +26,6 @@ module "simple" {
   location                = "westeurope"
   service_cidr            = "10.0.0.0/24"
   kubernetes_version      = "1.15.5"
-  node_os_channel_upgrade = "SecurityPatch"
 
   agent_pools = [
     {

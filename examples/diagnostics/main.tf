@@ -6,7 +6,6 @@ module "diagnostics" {
   location                = "westeurope"
   service_cidr            = "10.241.0.0/24"
   kubernetes_version      = "1.18.14"
-  node_os_channel_upgrade = "SecurityPatch"
 
   agent_pools = [
     {

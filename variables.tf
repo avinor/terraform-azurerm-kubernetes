@@ -20,14 +20,15 @@ variable "kubernetes_version" {
 
 variable "node_os_channel_upgrade" {
   description = "The upgrade channel for this Kubernetes Cluster Nodes' OS Image."
+  default     = "None"
 }
 
 variable "maintenance_window_node_os" {
   description = "Maintenance window of node os upgrades."
   type = object({
     frequency   = optional(string)
-    interval    = optional(string)
-    duration    = optional(string)
+    interval    = optional(number)
+    duration    = optional(number)
     day_of_week = optional(string)
     start_time  = optional(string)
   })
