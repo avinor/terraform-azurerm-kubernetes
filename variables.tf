@@ -29,14 +29,14 @@ variable "maintenance_window_node_os" {
     frequency   = optional(string)
     interval    = optional(number)
     duration    = optional(number)
-    day_of_week = optional(string)  # Required if frequency is weekly.
+    day_of_week = optional(string) # Required if frequency is weekly.
     start_time  = optional(string)
   })
   default = {
-    frequency   = "Daily"
-    interval    = 1
-    duration    = 4
-    start_time  = "00:00" # UTC
+    frequency  = "Daily"
+    interval   = 1
+    duration   = 4
+    start_time = "00:00" # UTC
   }
 }
 
