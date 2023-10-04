@@ -6,15 +6,7 @@ module "upgrade" {
   location                = "westeurope"
   service_cidr            = "10.241.0.0/24"
   kubernetes_version      = "1.18.14"
-  node_os_channel_upgrade = "Unmanaged"
-
-  maintenance_window_node_os = {
-    frequency   = "Weekly"
-    interval    = 1
-    duration    = 4
-    day_of_week = "Sunday"
-    start_time  = "01:00"
-  }
+  node_os_channel_upgrade = "NodeImage"
 
   agent_pools = [
     {

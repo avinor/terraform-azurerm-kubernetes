@@ -20,7 +20,7 @@ variable "kubernetes_version" {
 
 variable "node_os_channel_upgrade" {
   description = "The upgrade channel for this Kubernetes Cluster Nodes' OS Image."
-  default     = "Unmanaged"
+  default     = "NodeImage"
 }
 
 variable "maintenance_window_node_os" {
@@ -32,12 +32,7 @@ variable "maintenance_window_node_os" {
     day_of_week = optional(string) # Required if frequency is weekly.
     start_time  = optional(string)
   })
-  default = {
-    frequency  = "Daily"
-    interval   = 1
-    duration   = 4
-    start_time = "00:00" # UTC
-  }
+  default = null
 }
 
 variable "node_resource_group" {
