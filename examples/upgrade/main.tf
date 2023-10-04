@@ -8,14 +8,6 @@ module "upgrade" {
   kubernetes_version      = "1.18.14"
   node_os_channel_upgrade = "Unmanaged"
 
-  maintenance_window_node_os = {
-    frequency   = "Weekly"
-    interval    = 1
-    duration    = 4
-    day_of_week = "Sunday"
-    start_time  = "01:00"
-  }
-
   agent_pools = [
     {
       name                 = "linux"
