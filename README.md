@@ -25,7 +25,7 @@ module "simple" {
   resource_group_name     = "simple-aks-rg"
   location                = "westeurope"
   service_cidr            = "10.0.0.0/24"
-  kubernetes_version      = "1.27.6"
+  kubernetes_version      = "1.27.3"
 
   agent_pools = [
     {
