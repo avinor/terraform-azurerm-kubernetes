@@ -19,13 +19,13 @@ This example deploys a simple cluster with one node pool.
 ```terraform
 module "simple" {
   source  = "avinor/kubernetes/azurerm"
-  version = "6.0.0"
+  version = "6.0.1"
 
   name                    = "simple"
   resource_group_name     = "simple-aks-rg"
   location                = "westeurope"
   service_cidr            = "10.0.0.0/24"
-  kubernetes_version      = "1.15.5"
+  kubernetes_version      = "1.27.6"
 
   agent_pools = [
     {
