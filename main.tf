@@ -103,6 +103,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   node_resource_group               = var.node_resource_group
   azure_policy_enabled              = var.azure_policy_enabled
   node_os_channel_upgrade           = var.node_os_channel_upgrade
+  automatic_channel_upgrade         = var.automatic_channel_upgrade
   role_based_access_control_enabled = true
   tags                              = var.tags
 

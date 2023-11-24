@@ -23,6 +23,11 @@ variable "node_os_channel_upgrade" {
   default     = "NodeImage"
 }
 
+variable "automatic_channel_upgrade" {
+  description = "The upgrade channel for this Kubernetes Cluster"
+  default     = null
+}
+
 variable "maintenance_window_node_os" {
   description = "Maintenance window of node os upgrades."
   type = object({
