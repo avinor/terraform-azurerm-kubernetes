@@ -3,15 +3,15 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.23.0"
+      version = "~> 2.25.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.82.0"
+      version = "~> 3.88.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "~> 2.46.0"
+      version = "~> 2.47.0"
     }
   }
 }
@@ -236,11 +236,6 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
     }
     content {
       category = enabled_log.value
-
-      retention_policy {
-        enabled = false
-        days    = 0
-      }
     }
   }
 
@@ -249,11 +244,6 @@ resource "azurerm_monitor_diagnostic_setting" "aks" {
     content {
       category = metric.value
       enabled  = contains(local.parsed_diag.metric, "all") || contains(local.parsed_diag.metric, metric.value)
-
-      retention_policy {
-        enabled = false
-        days    = 0
-      }
     }
   }
 }
