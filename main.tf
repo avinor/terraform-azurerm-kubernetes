@@ -117,6 +117,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   automatic_channel_upgrade         = var.automatic_channel_upgrade
   role_based_access_control_enabled = true
   workload_identity_enabled         = var.workload_identity_enabled
+  oidc_issuer_enabled               = var.oidc_issuer_enabled
   tags                              = var.tags
 
   dynamic "maintenance_window_node_os" {

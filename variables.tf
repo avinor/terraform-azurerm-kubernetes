@@ -164,6 +164,12 @@ variable "key_vault_secrets_provider" {
   }
 }
 
+variable "oidc_issuer_enabled" {
+  description = "Enable or Disable the OIDC issuer URL. Defaults to false"
+  type        = bool
+  default     = false
+}
+
 variable "workload_identity_enabled" {
   description = "Specifies whether Azure AD Workload Identity should be enabled for the Cluster. Defaults to false"
   type        = bool
