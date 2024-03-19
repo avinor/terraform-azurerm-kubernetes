@@ -16,9 +16,9 @@ module "workload-identity" {
   ]
 
   workload_identities = {
-    runner-aksmgmt-prod = {
-      service_account_name      = "ipt-workload-identity-sa"
-      service_account_namespace = "runners-ipt"
+    identity_name = {
+      service_account_name      = "identity-sa"
+      service_account_namespace = "identity-namespace"
       role_assignments = {
         acr_pull = {
           scope = "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.ContainerRegistry/registries/myregistry"

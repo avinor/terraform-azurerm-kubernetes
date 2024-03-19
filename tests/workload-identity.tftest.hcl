@@ -15,9 +15,9 @@ variables {
   ]
 
   workload_identities = {
-    runner-aksmgmt-prod = {
-      service_account_name      = "ipt-workload-identity-sa"
-      service_account_namespace = "runners-ipt"
+    identity_name = {
+      service_account_name      = "identity-sa"
+      service_account_namespace = "identity-namespace"
       role_assignments = {
         acr_pull = {
           scope = "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.ContainerRegistry/registries/myregistry"
@@ -42,52 +42,52 @@ run "workload-identities" {
   }
 
   assert {
-    condition     = azurerm_user_assigned_identity.identity["runner-aksmgmt-prod"].name == "msi-runner-aksmgmt-prod"
+    condition     = azurerm_user_assigned_identity.identity["identity_name"].name == "msi-identity_name"
     error_message = "Identity name did not match expected"
   }
 
   assert {
-    condition     = azurerm_user_assigned_identity.identity["runner-aksmgmt-prod"].location == "westeurope"
+    condition     = azurerm_user_assigned_identity.identity["identity_name"].location == "westeurope"
     error_message = "Identity location did not match expected"
   }
 
   assert {
-    condition     = azurerm_user_assigned_identity.identity["runner-aksmgmt-prod"].resource_group_name == "workload-identity-aks-rg"
+    condition     = azurerm_user_assigned_identity.identity["identity_name"].resource_group_name == "workload-identity-aks-rg"
     error_message = "Identity resource group name did not match expected"
   }
 
   assert {
-    condition     = azurerm_user_assigned_identity.identity["runner-aksmgmt-prod"].tags == null
+    condition     = azurerm_user_assigned_identity.identity["identity_name"].tags == null
     error_message = "Identity tags did not match expected"
   }
 
   assert {
-    condition     = azurerm_federated_identity_credential.identity["runner-aksmgmt-prod"].name == "fic-runner-aksmgmt-prod"
+    condition     = azurerm_federated_identity_credential.identity["identity_name"].name == "fic-identity_name"
     error_message = "Identity credentials name did not match expected"
   }
 
   assert {
-    condition     = azurerm_federated_identity_credential.identity["runner-aksmgmt-prod"].audience[0] == "api://AzureADTokenExchange"
+    condition     = azurerm_federated_identity_credential.identity["identity_name"].audience[0] == "api://AzureADTokenExchange"
     error_message = "Identity credentials name did not match expected"
   }
 
   assert {
-    condition     = azurerm_federated_identity_credential.identity["runner-aksmgmt-prod"].subject == "system:serviceaccount:runners-ipt:ipt-workload-identity-sa"
+    condition     = azurerm_federated_identity_credential.identity["identity_name"].subject == "system:serviceaccount:identity-namespace:identity-sa"
     error_message = "Identity credentials name did not match expected"
   }
 
   assert {
-    condition     = azurerm_role_assignment.identity["runner-aksmgmt-prod.k8s_contributor"].role_definition_name == "Contributor"
+    condition     = azurerm_role_assignment.identity["identity_name.k8s_contributor"].role_definition_name == "Contributor"
     error_message = "Identity credentials name did not match expected"
   }
 
   assert {
-    condition     = azurerm_role_assignment.identity["runner-aksmgmt-prod.k8s_contributor"].scope == "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.ContainerService/managedClusters/my-k8s-cluster"
+    condition     = azurerm_role_assignment.identity["identity_name.k8s_contributor"].scope == "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.ContainerService/managedClusters/my-k8s-cluster"
     error_message = "Identity credentials name did not match expected"
   }
 
   assert {
-    condition     = azurerm_role_assignment.identity["runner-aksmgmt-prod.k8s_contributor"].scope == "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.ContainerService/managedClusters/my-k8s-cluster"
+    condition     = azurerm_role_assignment.identity["identity_name.k8s_contributor"].scope == "/subscriptions/12345678-1234-1234-1234-123456789012/resourceGroups/my-rg/providers/Microsoft.ContainerService/managedClusters/my-k8s-cluster"
     error_message = "Identity credentials name did not match expected"
   }
 
