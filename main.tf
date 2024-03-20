@@ -3,11 +3,11 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.25.0"
+      version = "~> 2.27.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.89.0"
+      version = "~> 3.96.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
@@ -105,6 +105,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
   node_os_channel_upgrade           = var.node_os_channel_upgrade
   automatic_channel_upgrade         = var.automatic_channel_upgrade
   role_based_access_control_enabled = true
+  workload_identity_enabled         = var.workload_identity_enabled
+  oidc_issuer_enabled               = var.oidc_issuer_enabled
   tags                              = var.tags
 
   dynamic "maintenance_window_node_os" {
