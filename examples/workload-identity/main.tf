@@ -1,11 +1,11 @@
 module "workload-identity" {
   source = "../../"
 
-  name                = "workload-identity"
-  resource_group_name = "workload-identity-aks-rg"
-  location            = "westeurope"
-  service_cidr        = "10.241.0.0/24"
-  kubernetes_version  = "1.27.3"
+  name                      = "workload-identity"
+  resource_group_name       = "workload-identity-aks-rg"
+  location                  = "westeurope"
+  service_cidr              = "10.241.0.0/24"
+  kubernetes_version        = "1.27.3"
   workload_identity_enabled = true
   oidc_issuer_enabled       = true
 
