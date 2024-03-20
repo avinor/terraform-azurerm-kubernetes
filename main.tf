@@ -79,17 +79,6 @@ locals {
     metric             = []
     log                = []
   }
-
-  workload_identities_flat = flatten([
-    for k, v in var.workload_identities : [
-      for assignment, role in v.role_assignments : {
-        identity   = k
-        scope      = role.scope
-        name       = role.name
-        assignment = assignment
-      }
-    ]
-  ])
 }
 
 resource "azurerm_resource_group" "aks" {
@@ -302,36 +291,6 @@ resource "azurerm_role_assignment" "msi" {
   scope                = var.managed_identities[count.index]
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_user_assigned_identity.msi.principal_id
-}
-
-resource "azurerm_user_assigned_identity" "identity" {
-  for_each = var.workload_identities
-
-  name                = format("msi-%s", each.key)
-  location            = azurerm_resource_group.aks.location
-  resource_group_name = azurerm_resource_group.aks.name
-  tags                = var.tags
-}
-
-resource "azurerm_federated_identity_credential" "identity" {
-  for_each = var.workload_identities
-
-  name                = format("fic-%s", each.key)
-  resource_group_name = azurerm_resource_group.aks.name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = azurerm_kubernetes_cluster.aks.oidc_issuer_url
-  parent_id           = azurerm_user_assigned_identity.identity[each.key].id
-  subject             = format("system:serviceaccount:%s:%s", each.value.service_account_namespace, each.value.service_account_name)
-}
-
-resource "azurerm_role_assignment" "identity" {
-  for_each = {
-    for k in local.workload_identities_flat : "${k.identity}.${k.assignment}" => k
-  }
-
-  principal_id         = azurerm_user_assigned_identity.identity[each.value.identity].principal_id
-  scope                = each.value.scope
-  role_definition_name = each.value.name
 }
 
 # Configure cluster

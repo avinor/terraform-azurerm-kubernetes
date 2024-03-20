@@ -176,19 +176,6 @@ variable "workload_identity_enabled" {
   default     = false
 }
 
-variable "workload_identities" {
-  description = "Map of workload identities and their role assignments"
-  type = map(object({
-    service_account_name      = string
-    service_account_namespace = string
-    role_assignments = map(object({
-      scope = string
-      name  = string
-    }))
-  }))
-  default = {}
-}
-
 variable "tags" {
   description = "Tags to apply to all resources created."
   type        = map(string)
