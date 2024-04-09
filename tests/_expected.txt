@@ -1,0 +1,1364 @@
+tests/addons.tftest.hcl... in progress
+  run "simple"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.azurerm_monitor_diagnostic_categories.default will be read during apply
+  # (config refers to values not yet known)
+ <= data "azurerm_monitor_diagnostic_categories" "default" {
+      + id                  = (known after apply)
+      + log_category_groups = (known after apply)
+      + log_category_types  = (known after apply)
+      + logs                = (known after apply)
+      + metrics             = (known after apply)
+      + resource_id         = (known after apply)
+    }
+
+  # azurerm_kubernetes_cluster.aks will be created
+  + resource "azurerm_kubernetes_cluster" "aks" {
+      + api_server_authorized_ip_ranges     = (known after apply)
+      + azure_policy_enabled                = false
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "addons"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + image_cleaner_enabled               = false
+      + image_cleaner_interval_hours        = 48
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.27.3"
+      + location                            = "westeurope"
+      + name                                = "addons-aks"
+      + node_os_channel_upgrade             = "NodeImage"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = false
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + public_network_access_enabled       = true
+      + resource_group_name                 = "addons-aks-rg"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + workload_identity_enabled           = false
+
+      + azure_active_directory_role_based_access_control {
+          + admin_group_object_ids = []
+          + azure_rbac_enabled     = false
+          + managed                = true
+          + tenant_id              = (known after apply)
+        }
+
+      + default_node_pool {
+          + enable_auto_scaling  = false
+          + kubelet_disk_type    = (known after apply)
+          + max_pods             = 30
+          + name                 = "linux"
+          + node_count           = 1
+          + node_labels          = (known after apply)
+          + orchestrator_version = "1.27.3"
+          + os_disk_size_gb      = 60
+          + os_disk_type         = "Managed"
+          + os_sku               = (known after apply)
+          + scale_down_mode      = "Delete"
+          + type                 = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled    = false
+          + vm_size              = "Standard_D2_v3"
+          + vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+          + workload_runtime     = (known after apply)
+        }
+
+      + identity {
+          + identity_ids = (known after apply)
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "UserAssigned"
+        }
+
+      + key_vault_secrets_provider {
+          + secret_identity          = (known after apply)
+          + secret_rotation_enabled  = true
+          + secret_rotation_interval = "2m"
+        }
+
+      + network_profile {
+          + dns_service_ip     = "10.241.0.10"
+          + docker_bridge_cidr = (known after apply)
+          + ip_versions        = (known after apply)
+          + load_balancer_sku  = "standard"
+          + network_mode       = (known after apply)
+          + network_plugin     = "azure"
+          + network_policy     = "azure"
+          + outbound_type      = "loadBalancer"
+          + pod_cidr           = (known after apply)
+          + pod_cidrs          = (known after apply)
+          + service_cidr       = "10.241.0.0/24"
+          + service_cidrs      = (known after apply)
+        }
+    }
+
+  # azurerm_resource_group.aks will be created
+  + resource "azurerm_resource_group" "aks" {
+      + id       = (known after apply)
+      + location = "westeurope"
+      + name     = "addons-aks-rg"
+    }
+
+  # azurerm_role_assignment.subnet[0] will be created
+  + resource "azurerm_role_assignment" "subnet" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = (known after apply)
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Network Contributor"
+      + scope                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_user_assigned_identity.msi will be created
+  + resource "azurerm_user_assigned_identity" "msi" {
+      + client_id           = (known after apply)
+      + id                  = (known after apply)
+      + location            = "westeurope"
+      + name                = "addons-msi"
+      + principal_id        = (known after apply)
+      + resource_group_name = "addons-aks-rg"
+      + tenant_id           = (known after apply)
+    }
+
+  # kubernetes_cluster_role.containerlogs will be created
+  + resource "kubernetes_cluster_role" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-log-reader"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "pods/log",
+            ]
+          + verbs      = [
+              + "get",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role.impersonator will be created
+  + resource "kubernetes_cluster_role" "impersonator" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "impersonator"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "users",
+              + "groups",
+              + "serviceaccounts",
+            ]
+          + verbs      = [
+              + "impersonate",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role_binding.containerlogs will be created
+  + resource "kubernetes_cluster_role_binding" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-read-logs-global"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + role_ref {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "ClusterRole"
+          + name      = "containerhealth-log-reader"
+        }
+
+      + subject {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "User"
+          + name      = "clusterUser"
+          + namespace = "default"
+        }
+    }
+
+Plan: 7 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + host     = (sensitive value)
+  + id       = (known after apply)
+  + identity = (known after apply)
+
+tests/addons.tftest.hcl... tearing down
+tests/addons.tftest.hcl... pass
+tests/diagnostics.tftest.hcl... in progress
+  run "simple"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.azurerm_monitor_diagnostic_categories.default will be read during apply
+  # (config refers to values not yet known)
+ <= data "azurerm_monitor_diagnostic_categories" "default" {
+      + id                  = (known after apply)
+      + log_category_groups = (known after apply)
+      + log_category_types  = (known after apply)
+      + logs                = (known after apply)
+      + metrics             = (known after apply)
+      + resource_id         = (known after apply)
+    }
+
+  # azurerm_kubernetes_cluster.aks will be created
+  + resource "azurerm_kubernetes_cluster" "aks" {
+      + api_server_authorized_ip_ranges     = (known after apply)
+      + azure_policy_enabled                = true
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "diagnostics"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + image_cleaner_enabled               = false
+      + image_cleaner_interval_hours        = 48
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.27.3"
+      + location                            = "westeurope"
+      + name                                = "diagnostics-aks"
+      + node_os_channel_upgrade             = "NodeImage"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = false
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + public_network_access_enabled       = true
+      + resource_group_name                 = "diagnostics-aks-rg"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + workload_identity_enabled           = false
+
+      + azure_active_directory_role_based_access_control {
+          + admin_group_object_ids = []
+          + azure_rbac_enabled     = false
+          + managed                = true
+          + tenant_id              = (known after apply)
+        }
+
+      + default_node_pool {
+          + enable_auto_scaling  = false
+          + kubelet_disk_type    = (known after apply)
+          + max_pods             = 30
+          + name                 = "linux"
+          + node_count           = 1
+          + node_labels          = (known after apply)
+          + orchestrator_version = "1.27.3"
+          + os_disk_size_gb      = 60
+          + os_disk_type         = "Managed"
+          + os_sku               = (known after apply)
+          + scale_down_mode      = "Delete"
+          + type                 = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled    = false
+          + vm_size              = "Standard_D2_v3"
+          + vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+          + workload_runtime     = (known after apply)
+        }
+
+      + identity {
+          + identity_ids = (known after apply)
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "UserAssigned"
+        }
+
+      + network_profile {
+          + dns_service_ip     = "10.241.0.10"
+          + docker_bridge_cidr = (known after apply)
+          + ip_versions        = (known after apply)
+          + load_balancer_sku  = "standard"
+          + network_mode       = (known after apply)
+          + network_plugin     = "azure"
+          + network_policy     = "azure"
+          + outbound_type      = "loadBalancer"
+          + pod_cidr           = (known after apply)
+          + pod_cidrs          = (known after apply)
+          + service_cidr       = "10.241.0.0/24"
+          + service_cidrs      = (known after apply)
+        }
+    }
+
+  # azurerm_monitor_diagnostic_setting.aks[0] will be created
+  + resource "azurerm_monitor_diagnostic_setting" "aks" {
+      + id                             = (known after apply)
+      + log_analytics_destination_type = (known after apply)
+      + log_analytics_workspace_id     = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-log-analytics"
+      + name                           = "diagnostics-aks-diag"
+      + target_resource_id             = (known after apply)
+    }
+
+  # azurerm_resource_group.aks will be created
+  + resource "azurerm_resource_group" "aks" {
+      + id       = (known after apply)
+      + location = "westeurope"
+      + name     = "diagnostics-aks-rg"
+    }
+
+  # azurerm_role_assignment.subnet[0] will be created
+  + resource "azurerm_role_assignment" "subnet" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = (known after apply)
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Network Contributor"
+      + scope                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_user_assigned_identity.msi will be created
+  + resource "azurerm_user_assigned_identity" "msi" {
+      + client_id           = (known after apply)
+      + id                  = (known after apply)
+      + location            = "westeurope"
+      + name                = "diagnostics-msi"
+      + principal_id        = (known after apply)
+      + resource_group_name = "diagnostics-aks-rg"
+      + tenant_id           = (known after apply)
+    }
+
+  # kubernetes_cluster_role.containerlogs will be created
+  + resource "kubernetes_cluster_role" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-log-reader"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "pods/log",
+            ]
+          + verbs      = [
+              + "get",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role.impersonator will be created
+  + resource "kubernetes_cluster_role" "impersonator" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "impersonator"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "users",
+              + "groups",
+              + "serviceaccounts",
+            ]
+          + verbs      = [
+              + "impersonate",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role_binding.containerlogs will be created
+  + resource "kubernetes_cluster_role_binding" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-read-logs-global"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + role_ref {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "ClusterRole"
+          + name      = "containerhealth-log-reader"
+        }
+
+      + subject {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "User"
+          + name      = "clusterUser"
+          + namespace = "default"
+        }
+    }
+
+Plan: 8 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + host     = (sensitive value)
+  + id       = (known after apply)
+  + identity = (known after apply)
+
+tests/diagnostics.tftest.hcl... tearing down
+tests/diagnostics.tftest.hcl... pass
+tests/rbac.tftest.hcl... in progress
+  run "simple"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.azurerm_monitor_diagnostic_categories.default will be read during apply
+  # (config refers to values not yet known)
+ <= data "azurerm_monitor_diagnostic_categories" "default" {
+      + id                  = (known after apply)
+      + log_category_groups = (known after apply)
+      + log_category_types  = (known after apply)
+      + logs                = (known after apply)
+      + metrics             = (known after apply)
+      + resource_id         = (known after apply)
+    }
+
+  # azurerm_kubernetes_cluster.aks will be created
+  + resource "azurerm_kubernetes_cluster" "aks" {
+      + api_server_authorized_ip_ranges     = (known after apply)
+      + azure_policy_enabled                = true
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "rbac"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + image_cleaner_enabled               = false
+      + image_cleaner_interval_hours        = 48
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.27.3"
+      + location                            = "norwayeast"
+      + name                                = "rbac-aks"
+      + node_os_channel_upgrade             = "NodeImage"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = false
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + public_network_access_enabled       = true
+      + resource_group_name                 = "rbac-aks-rg"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + workload_identity_enabled           = false
+
+      + azure_active_directory_role_based_access_control {
+          + admin_group_object_ids = [
+              + "12345678-1234-1234-1234-123456789012",
+            ]
+          + azure_rbac_enabled     = true
+          + managed                = true
+          + tenant_id              = (known after apply)
+        }
+
+      + default_node_pool {
+          + enable_auto_scaling  = false
+          + kubelet_disk_type    = (known after apply)
+          + max_pods             = 30
+          + name                 = "linux"
+          + node_count           = 1
+          + node_labels          = (known after apply)
+          + orchestrator_version = "1.27.3"
+          + os_disk_size_gb      = 60
+          + os_disk_type         = "Managed"
+          + os_sku               = (known after apply)
+          + scale_down_mode      = "Delete"
+          + type                 = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled    = false
+          + vm_size              = "Standard_D2_v3"
+          + vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+          + workload_runtime     = (known after apply)
+        }
+
+      + identity {
+          + identity_ids = (known after apply)
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "UserAssigned"
+        }
+
+      + network_profile {
+          + dns_service_ip     = "10.241.0.10"
+          + docker_bridge_cidr = (known after apply)
+          + ip_versions        = (known after apply)
+          + load_balancer_sku  = "standard"
+          + network_mode       = (known after apply)
+          + network_plugin     = "azure"
+          + network_policy     = "azure"
+          + outbound_type      = "loadBalancer"
+          + pod_cidr           = (known after apply)
+          + pod_cidrs          = (known after apply)
+          + service_cidr       = "10.241.0.0/24"
+          + service_cidrs      = (known after apply)
+        }
+    }
+
+  # azurerm_resource_group.aks will be created
+  + resource "azurerm_resource_group" "aks" {
+      + id       = (known after apply)
+      + location = "norwayeast"
+      + name     = "rbac-aks-rg"
+    }
+
+  # azurerm_role_assignment.subnet[0] will be created
+  + resource "azurerm_role_assignment" "subnet" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = (known after apply)
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Network Contributor"
+      + scope                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_role_assignment.users["12345678-1234-1234-1234-123456789013-my-namespace"] will be created
+  + resource "azurerm_role_assignment" "users" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = "12345678-1234-1234-1234-123456789013"
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Azure Kubernetes Service RBAC Writer"
+      + scope                            = (known after apply)
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_role_assignment.users["12345678-1234-1234-1234-123456789014-your-namespace"] will be created
+  + resource "azurerm_role_assignment" "users" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = "12345678-1234-1234-1234-123456789014"
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Azure Kubernetes Service RBAC Writer"
+      + scope                            = (known after apply)
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_user_assigned_identity.msi will be created
+  + resource "azurerm_user_assigned_identity" "msi" {
+      + client_id           = (known after apply)
+      + id                  = (known after apply)
+      + location            = "norwayeast"
+      + name                = "rbac-msi"
+      + principal_id        = (known after apply)
+      + resource_group_name = "rbac-aks-rg"
+      + tenant_id           = (known after apply)
+    }
+
+  # kubernetes_cluster_role.containerlogs will be created
+  + resource "kubernetes_cluster_role" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-log-reader"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "pods/log",
+            ]
+          + verbs      = [
+              + "get",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role.impersonator will be created
+  + resource "kubernetes_cluster_role" "impersonator" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "impersonator"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "users",
+              + "groups",
+              + "serviceaccounts",
+            ]
+          + verbs      = [
+              + "impersonate",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role_binding.containerlogs will be created
+  + resource "kubernetes_cluster_role_binding" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-read-logs-global"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + role_ref {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "ClusterRole"
+          + name      = "containerhealth-log-reader"
+        }
+
+      + subject {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "User"
+          + name      = "clusterUser"
+          + namespace = "default"
+        }
+    }
+
+Plan: 9 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + host     = (sensitive value)
+  + id       = (known after apply)
+  + identity = (known after apply)
+
+tests/rbac.tftest.hcl... tearing down
+tests/rbac.tftest.hcl... pass
+tests/simple.tftest.hcl... in progress
+  run "simple"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.azurerm_monitor_diagnostic_categories.default will be read during apply
+  # (config refers to values not yet known)
+ <= data "azurerm_monitor_diagnostic_categories" "default" {
+      + id                  = (known after apply)
+      + log_category_groups = (known after apply)
+      + log_category_types  = (known after apply)
+      + logs                = (known after apply)
+      + metrics             = (known after apply)
+      + resource_id         = (known after apply)
+    }
+
+  # azurerm_kubernetes_cluster.aks will be created
+  + resource "azurerm_kubernetes_cluster" "aks" {
+      + api_server_authorized_ip_ranges     = (known after apply)
+      + azure_policy_enabled                = true
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "simple"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + image_cleaner_enabled               = false
+      + image_cleaner_interval_hours        = 48
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.27.3"
+      + location                            = "westeurope"
+      + name                                = "simple-aks"
+      + node_os_channel_upgrade             = "NodeImage"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = false
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + public_network_access_enabled       = true
+      + resource_group_name                 = "simple-aks-rg"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + workload_identity_enabled           = false
+
+      + azure_active_directory_role_based_access_control {
+          + admin_group_object_ids = []
+          + azure_rbac_enabled     = false
+          + managed                = true
+          + tenant_id              = (known after apply)
+        }
+
+      + default_node_pool {
+          + enable_auto_scaling  = false
+          + kubelet_disk_type    = (known after apply)
+          + max_pods             = 30
+          + name                 = "linux"
+          + node_count           = 1
+          + node_labels          = (known after apply)
+          + orchestrator_version = "1.27.3"
+          + os_disk_size_gb      = 60
+          + os_disk_type         = "Managed"
+          + os_sku               = (known after apply)
+          + scale_down_mode      = "Delete"
+          + type                 = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled    = false
+          + vm_size              = "Standard_D2_v3"
+          + vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+          + workload_runtime     = (known after apply)
+        }
+
+      + identity {
+          + identity_ids = (known after apply)
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "UserAssigned"
+        }
+
+      + network_profile {
+          + dns_service_ip     = "10.241.0.10"
+          + docker_bridge_cidr = (known after apply)
+          + ip_versions        = (known after apply)
+          + load_balancer_sku  = "standard"
+          + network_mode       = (known after apply)
+          + network_plugin     = "azure"
+          + network_policy     = "azure"
+          + outbound_type      = "loadBalancer"
+          + pod_cidr           = (known after apply)
+          + pod_cidrs          = (known after apply)
+          + service_cidr       = "10.241.0.0/24"
+          + service_cidrs      = (known after apply)
+        }
+    }
+
+  # azurerm_resource_group.aks will be created
+  + resource "azurerm_resource_group" "aks" {
+      + id       = (known after apply)
+      + location = "westeurope"
+      + name     = "simple-aks-rg"
+    }
+
+  # azurerm_role_assignment.subnet[0] will be created
+  + resource "azurerm_role_assignment" "subnet" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = (known after apply)
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Network Contributor"
+      + scope                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_user_assigned_identity.msi will be created
+  + resource "azurerm_user_assigned_identity" "msi" {
+      + client_id           = (known after apply)
+      + id                  = (known after apply)
+      + location            = "westeurope"
+      + name                = "simple-msi"
+      + principal_id        = (known after apply)
+      + resource_group_name = "simple-aks-rg"
+      + tenant_id           = (known after apply)
+    }
+
+  # kubernetes_cluster_role.containerlogs will be created
+  + resource "kubernetes_cluster_role" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-log-reader"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "pods/log",
+            ]
+          + verbs      = [
+              + "get",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role.impersonator will be created
+  + resource "kubernetes_cluster_role" "impersonator" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "impersonator"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "users",
+              + "groups",
+              + "serviceaccounts",
+            ]
+          + verbs      = [
+              + "impersonate",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role_binding.containerlogs will be created
+  + resource "kubernetes_cluster_role_binding" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-read-logs-global"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + role_ref {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "ClusterRole"
+          + name      = "containerhealth-log-reader"
+        }
+
+      + subject {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "User"
+          + name      = "clusterUser"
+          + namespace = "default"
+        }
+    }
+
+Plan: 7 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + host     = (sensitive value)
+  + id       = (known after apply)
+  + identity = (known after apply)
+
+tests/simple.tftest.hcl... tearing down
+tests/simple.tftest.hcl... pass
+tests/upgrade.tftest.hcl... in progress
+  run "simple"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.azurerm_monitor_diagnostic_categories.default will be read during apply
+  # (config refers to values not yet known)
+ <= data "azurerm_monitor_diagnostic_categories" "default" {
+      + id                  = (known after apply)
+      + log_category_groups = (known after apply)
+      + log_category_types  = (known after apply)
+      + logs                = (known after apply)
+      + metrics             = (known after apply)
+      + resource_id         = (known after apply)
+    }
+
+  # azurerm_kubernetes_cluster.aks will be created
+  + resource "azurerm_kubernetes_cluster" "aks" {
+      + api_server_authorized_ip_ranges     = (known after apply)
+      + azure_policy_enabled                = true
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "upgrade"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + image_cleaner_enabled               = false
+      + image_cleaner_interval_hours        = 48
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.27.3"
+      + location                            = "westeurope"
+      + name                                = "upgrade-aks"
+      + node_os_channel_upgrade             = "Unmanaged"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = false
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + public_network_access_enabled       = true
+      + resource_group_name                 = "upgrade-aks-rg"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + workload_identity_enabled           = false
+
+      + azure_active_directory_role_based_access_control {
+          + admin_group_object_ids = []
+          + azure_rbac_enabled     = false
+          + managed                = true
+          + tenant_id              = (known after apply)
+        }
+
+      + default_node_pool {
+          + enable_auto_scaling         = false
+          + kubelet_disk_type           = (known after apply)
+          + max_pods                    = 30
+          + name                        = "linux"
+          + node_count                  = 1
+          + node_labels                 = (known after apply)
+          + orchestrator_version        = "1.27.3"
+          + os_disk_size_gb             = 60
+          + os_disk_type                = "Managed"
+          + os_sku                      = (known after apply)
+          + scale_down_mode             = "Delete"
+          + temporary_name_for_rotation = "tmppool"
+          + type                        = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled           = false
+          + vm_size                     = "Standard_D2_v3"
+          + vnet_subnet_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+          + workload_runtime            = (known after apply)
+        }
+
+      + identity {
+          + identity_ids = (known after apply)
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "UserAssigned"
+        }
+
+      + network_profile {
+          + dns_service_ip     = "10.241.0.10"
+          + docker_bridge_cidr = (known after apply)
+          + ip_versions        = (known after apply)
+          + load_balancer_sku  = "standard"
+          + network_mode       = (known after apply)
+          + network_plugin     = "azure"
+          + network_policy     = "azure"
+          + outbound_type      = "loadBalancer"
+          + pod_cidr           = (known after apply)
+          + pod_cidrs          = (known after apply)
+          + service_cidr       = "10.241.0.0/24"
+          + service_cidrs      = (known after apply)
+        }
+    }
+
+  # azurerm_resource_group.aks will be created
+  + resource "azurerm_resource_group" "aks" {
+      + id       = (known after apply)
+      + location = "westeurope"
+      + name     = "upgrade-aks-rg"
+    }
+
+  # azurerm_role_assignment.subnet[0] will be created
+  + resource "azurerm_role_assignment" "subnet" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = (known after apply)
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Network Contributor"
+      + scope                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_user_assigned_identity.msi will be created
+  + resource "azurerm_user_assigned_identity" "msi" {
+      + client_id           = (known after apply)
+      + id                  = (known after apply)
+      + location            = "westeurope"
+      + name                = "upgrade-msi"
+      + principal_id        = (known after apply)
+      + resource_group_name = "upgrade-aks-rg"
+      + tenant_id           = (known after apply)
+    }
+
+  # kubernetes_cluster_role.containerlogs will be created
+  + resource "kubernetes_cluster_role" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-log-reader"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "pods/log",
+            ]
+          + verbs      = [
+              + "get",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role.impersonator will be created
+  + resource "kubernetes_cluster_role" "impersonator" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "impersonator"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "users",
+              + "groups",
+              + "serviceaccounts",
+            ]
+          + verbs      = [
+              + "impersonate",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role_binding.containerlogs will be created
+  + resource "kubernetes_cluster_role_binding" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-read-logs-global"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + role_ref {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "ClusterRole"
+          + name      = "containerhealth-log-reader"
+        }
+
+      + subject {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "User"
+          + name      = "clusterUser"
+          + namespace = "default"
+        }
+    }
+
+Plan: 7 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + host     = (sensitive value)
+  + id       = (known after apply)
+  + identity = (known after apply)
+
+tests/upgrade.tftest.hcl... tearing down
+tests/upgrade.tftest.hcl... pass
+tests/workload-identity.tftest.hcl... in progress
+  run "workload-identity"... pass
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+ <= read (data resources)
+
+Terraform will perform the following actions:
+
+  # data.azurerm_monitor_diagnostic_categories.default will be read during apply
+  # (config refers to values not yet known)
+ <= data "azurerm_monitor_diagnostic_categories" "default" {
+      + id                  = (known after apply)
+      + log_category_groups = (known after apply)
+      + log_category_types  = (known after apply)
+      + logs                = (known after apply)
+      + metrics             = (known after apply)
+      + resource_id         = (known after apply)
+    }
+
+  # azurerm_kubernetes_cluster.aks will be created
+  + resource "azurerm_kubernetes_cluster" "aks" {
+      + api_server_authorized_ip_ranges     = (known after apply)
+      + azure_policy_enabled                = true
+      + current_kubernetes_version          = (known after apply)
+      + dns_prefix                          = "workload-identity"
+      + fqdn                                = (known after apply)
+      + http_application_routing_zone_name  = (known after apply)
+      + id                                  = (known after apply)
+      + image_cleaner_enabled               = false
+      + image_cleaner_interval_hours        = 48
+      + kube_admin_config                   = (sensitive value)
+      + kube_admin_config_raw               = (sensitive value)
+      + kube_config                         = (sensitive value)
+      + kube_config_raw                     = (sensitive value)
+      + kubernetes_version                  = "1.27.3"
+      + location                            = "westeurope"
+      + name                                = "workload-identity-aks"
+      + node_os_channel_upgrade             = "NodeImage"
+      + node_resource_group                 = (known after apply)
+      + node_resource_group_id              = (known after apply)
+      + oidc_issuer_enabled                 = true
+      + oidc_issuer_url                     = (known after apply)
+      + portal_fqdn                         = (known after apply)
+      + private_cluster_enabled             = false
+      + private_cluster_public_fqdn_enabled = false
+      + private_dns_zone_id                 = (known after apply)
+      + private_fqdn                        = (known after apply)
+      + public_network_access_enabled       = true
+      + resource_group_name                 = "workload-identity-aks-rg"
+      + role_based_access_control_enabled   = true
+      + run_command_enabled                 = true
+      + sku_tier                            = "Free"
+      + support_plan                        = "KubernetesOfficial"
+      + workload_identity_enabled           = true
+
+      + azure_active_directory_role_based_access_control {
+          + admin_group_object_ids = []
+          + azure_rbac_enabled     = false
+          + managed                = true
+          + tenant_id              = (known after apply)
+        }
+
+      + default_node_pool {
+          + enable_auto_scaling  = false
+          + kubelet_disk_type    = (known after apply)
+          + max_pods             = 30
+          + name                 = "linux"
+          + node_count           = 1
+          + node_labels          = (known after apply)
+          + orchestrator_version = "1.27.3"
+          + os_disk_size_gb      = 60
+          + os_disk_type         = "Managed"
+          + os_sku               = (known after apply)
+          + scale_down_mode      = "Delete"
+          + type                 = "VirtualMachineScaleSets"
+          + ultra_ssd_enabled    = false
+          + vm_size              = "Standard_D2_v3"
+          + vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+          + workload_runtime     = (known after apply)
+        }
+
+      + identity {
+          + identity_ids = (known after apply)
+          + principal_id = (known after apply)
+          + tenant_id    = (known after apply)
+          + type         = "UserAssigned"
+        }
+
+      + network_profile {
+          + dns_service_ip     = "10.241.0.10"
+          + docker_bridge_cidr = (known after apply)
+          + ip_versions        = (known after apply)
+          + load_balancer_sku  = "standard"
+          + network_mode       = (known after apply)
+          + network_plugin     = "azure"
+          + network_policy     = "azure"
+          + outbound_type      = "loadBalancer"
+          + pod_cidr           = (known after apply)
+          + pod_cidrs          = (known after apply)
+          + service_cidr       = "10.241.0.0/24"
+          + service_cidrs      = (known after apply)
+        }
+    }
+
+  # azurerm_resource_group.aks will be created
+  + resource "azurerm_resource_group" "aks" {
+      + id       = (known after apply)
+      + location = "westeurope"
+      + name     = "workload-identity-aks-rg"
+    }
+
+  # azurerm_role_assignment.subnet[0] will be created
+  + resource "azurerm_role_assignment" "subnet" {
+      + id                               = (known after apply)
+      + name                             = (known after apply)
+      + principal_id                     = (known after apply)
+      + principal_type                   = (known after apply)
+      + role_definition_id               = (known after apply)
+      + role_definition_name             = "Network Contributor"
+      + scope                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      + skip_service_principal_aad_check = (known after apply)
+    }
+
+  # azurerm_user_assigned_identity.msi will be created
+  + resource "azurerm_user_assigned_identity" "msi" {
+      + client_id           = (known after apply)
+      + id                  = (known after apply)
+      + location            = "westeurope"
+      + name                = "workload-identity-msi"
+      + principal_id        = (known after apply)
+      + resource_group_name = "workload-identity-aks-rg"
+      + tenant_id           = (known after apply)
+    }
+
+  # kubernetes_cluster_role.containerlogs will be created
+  + resource "kubernetes_cluster_role" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-log-reader"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "pods/log",
+            ]
+          + verbs      = [
+              + "get",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role.impersonator will be created
+  + resource "kubernetes_cluster_role" "impersonator" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "impersonator"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + rule {
+          + api_groups = [
+              + "",
+            ]
+          + resources  = [
+              + "users",
+              + "groups",
+              + "serviceaccounts",
+            ]
+          + verbs      = [
+              + "impersonate",
+            ]
+        }
+    }
+
+  # kubernetes_cluster_role_binding.containerlogs will be created
+  + resource "kubernetes_cluster_role_binding" "containerlogs" {
+      + id = (known after apply)
+
+      + metadata {
+          + generation       = (known after apply)
+          + name             = "containerhealth-read-logs-global"
+          + resource_version = (known after apply)
+          + uid              = (known after apply)
+        }
+
+      + role_ref {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "ClusterRole"
+          + name      = "containerhealth-log-reader"
+        }
+
+      + subject {
+          + api_group = "rbac.authorization.k8s.io"
+          + kind      = "User"
+          + name      = "clusterUser"
+          + namespace = "default"
+        }
+    }
+
+Plan: 7 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + host     = (sensitive value)
+  + id       = (known after apply)
+  + identity = (known after apply)
+
+tests/workload-identity.tftest.hcl... tearing down
+tests/workload-identity.tftest.hcl... pass
+
+Success! 6 passed, 0 failed.

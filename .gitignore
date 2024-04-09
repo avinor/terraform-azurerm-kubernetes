@@ -12,3 +12,5 @@
 # Inetllij Idea
 .idea
 *.iml
+
+tests/_actual.txt
