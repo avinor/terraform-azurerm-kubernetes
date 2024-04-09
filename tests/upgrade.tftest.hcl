@@ -9,9 +9,10 @@ variables {
 
   agent_pools = [
     {
-      name                 = "linux"
-      orchestrator_version = "1.27.3"
-      vnet_subnet_id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      name                        = "linux"
+      orchestrator_version        = "1.27.3"
+      vnet_subnet_id              = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mygroup1/providers/Microsoft.Network/virtualNetworks/myvnet1/subnets/mysub"
+      temporary_name_for_rotation = "tmppool"
     },
   ]
 }
